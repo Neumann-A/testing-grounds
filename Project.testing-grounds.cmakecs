@@ -1,0 +1,18 @@
+PROJECT_NAME
+    testing-grounds
+PACKAGE_NAME
+    tg
+VERSION 
+    0.1.0
+VERSION_COMPATIBILITY
+    ExactVersion
+DESCRIPTION 
+    "Just testing stuff"
+HOMEPAGE_URL
+    "https://github.com/Neumann-A/testing-grounds"
+LANGUAGES 
+    CXX
+TARGET_FILES
+    Target.testing-enums.cmakecs
+REQUIRED_PACKAGES
+    fmt

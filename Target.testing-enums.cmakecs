@@ -1,0 +1,11 @@
+TARGET_NAME
+    testing-enums
+EXECUTABLE
+PRIVATE_LINK_LIBRARIES
+    fmt::fmt
+    MyCEL::MyCEL
+PRIVATE_COMPILE_FEATURES
+    cxx_std_20
+SOURCES
+    src/testing-enums-switches.cpp
+    include/testing-enums-switches.hpp
