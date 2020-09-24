@@ -9,3 +9,9 @@ if(NOT CMakeCS_FOUND)
 endif()
 
 project("Project.testing-grounds.cmakecs")
+
+
+set(MY_MESSAGE "Reconfiguring!")
+set(MY_MESSAGE "${MY_MESSAGE}" CACHE STRING "Message to print!" FORCE)
+set(MY_MESSAGE "First configure!" CACHE STRING "Message to print!")
+message(STATUS "MY_MESSAGE:${MY_MESSAGE}")

@@ -9,3 +9,5 @@ PRIVATE_COMPILE_FEATURES
 SOURCES
     src/testing-enums-switches.cpp
     include/testing-enums-switches.hpp
+PRIVATE_INCLUDE_DIRECTORIES
+    include
