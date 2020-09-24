@@ -1,4 +1,10 @@
 #pragma once
+// #if _MSVC_LANG <= 201703L
+//     #define _MSVC_LANG 201803L
+//     #pragma message("test")
+// #else
+//     #pragma message("othertest")
+// #endif
 
 #include <array>
 #include <tuple>
@@ -9,17 +15,31 @@
 #include <optional>
 #include <stdexcept>
 
+#ifdef _HAS_CXX20
+    #pragma message("HASCXX20")
+#endif
 //https://www.youtube.com/watch?v=INn3xa4pMfg
 template <typename Key, typename Value, std::size_t Size>
 struct static_map {
-    std::array<std::pair<Key,Value>, Size> data;
+    using type = static_map<Key,Value,Size>;
+    using size_type = std::size_t;
+    using value_type = std::pair<Key,Value>;
+    std::array<value_type, Size> data;
     [[nodiscard]] constexpr std::optional<Value> at(const Key &key) const noexcept {
-        const auto it = std::find_if(begin(data),end(data),
+        const auto it = std::find_if(std::begin(data),std::end(data),
                 [&key](const auto &val) {return val.first == key;} );
-        if(it != end(data))
+        if(it != std::end(data))
             return it->second;
         return std::nullopt;
     };
+
+    [[nodiscard]] constexpr value_type& operator[](size_type index) {
+        return data[index];
+    };
+    [[nodiscard]] constexpr const value_type& operator[](size_type index) const {
+        return this->operator[](index);
+    };
+
     [[nodiscard]] constexpr Value operator[](const Key &key) const {
         const auto it = std::find_if(begin(data),end(data),
                 [&key](const auto &val) {return val.first == key;} );
@@ -28,11 +48,31 @@ struct static_map {
         else
             throw std::range_error("Key not found");
     };
+    [[nodiscard]] constexpr Value operator[](const Value &val) const {
+        const auto it = std::find_if(begin(data),end(data),
+                [&val](const auto &key) {return key.second == val;} );
+        if(it != end(data))
+            return it->first;
+        else
+            throw std::range_error("Value not found");
+    };
 
+    [[nodiscard]] constexpr auto begin() noexcept {
+        return begin(data);
+    }
+    [[nodiscard]] constexpr auto begin() const noexcept {
+        return begin(data);
+    }
+    [[nodiscard]] constexpr auto end() noexcept {
+        return end(data);
+    }
+    [[nodiscard]] constexpr auto end() const noexcept {
+        return end(data);
+    }
     [[nodiscard]] constexpr static_map<Value,Key,Size> switch_key_value() const noexcept {
-        constexpr std::array<std::pair<Value,Key>, Size> ret;
+        std::array<std::pair<Value,Key>, Size> ret;
         for(std::size_t i = 0; i < data.size(); ++i) {
-            ret[i] = { data[i].second, data[i].first};
+            ret[i] = std::make_pair(Value{data[i].second}, Key{data[i].first});
         }
         return static_map<Value,Key,Size>{ret};
     }
@@ -50,10 +90,11 @@ using testenum_pair = std::pair<const testenum, const std::string_view>;
 namespace {
     using namespace std::literals::string_view_literals;
 }
-constexpr const std::array<testenum_pair,4> testenum_map {{ {testenum::value1,"value1"sv},
+constexpr const static_map<testenum,std::string_view,4>testenum_map {{{ {testenum::value1,"value1"sv},
                                                            {testenum::value2,"value2"sv},
                                                            {testenum::value3,"value3"sv},
-                                                           {testenum::value4,"value4"sv} }};
+                                                           {testenum::value4,"value4"sv} }}};
+constexpr const static_map<std::string_view,testenum,4> testenum_mapswitched {testenum_map.switch_key_value()};
 constexpr const static_map<std::string_view,testenum,4> testenum_map2 { { { {"value1"sv, testenum::value1},
                                                            {"value2"sv,testenum::value2},
                                                            {"value3"sv,testenum::value3},
