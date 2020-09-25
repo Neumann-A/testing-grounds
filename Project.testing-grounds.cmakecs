@@ -16,3 +16,4 @@ TARGET_FILES
     Target.testing-enums.cmakecs
 REQUIRED_PACKAGES
     fmt
+    magic_enum
