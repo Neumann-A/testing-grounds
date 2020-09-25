@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <optional>
 #include <stdexcept>
+#include <tuple>
 
 #ifdef _HAS_CXX20
     #pragma message("HASCXX20")
@@ -78,9 +79,41 @@ struct static_map {
     }
 };
 
+template<typename EnumType, EnumType Val>
+struct EnumValue
+{
+    using type = EnumType;
+    static constexpr EnumType value = Val;
+};
+
+template<typename EnumType, EnumType Val1 , EnumType... Vals>
+struct EnumNode {
+        using type = EnumType;
+        static constexpr EnumType value = Val1;
+        using next = EnumNode<EnumType, Vals...>;
+        //auto next(EnumType... Vals) { return EnumNode<EnumType,Vals...>();};
+};
+
+
+
+template<typename EnumType, EnumType... Vals>
+struct enum_type_value_list : std::integer_sequence<EnumType, Vals...> {
+    static_assert(std::is_enum_v<decltype(Val1)>);
+
+    template <std::size_t N>
+    using element_type = typename std::tuple_element<N, std::tuple<Vals...>>::type;
+
+    static constexpr EnumType get(std::underlying_type_t<EnumType> i)
+    {
+        return 
+    }
+};
+
 
 enum class testenum { value1, value2, value3, value4};
 
+enum_type_list<testenum, testenum::value1,testenum::value2, testenum::value3, testenum::value4> test_types;
+static_assert(EnumValue<testenum,testenum::value1>::value==testenum::value1);
 
 struct enum_traits {
    // static_assert();
