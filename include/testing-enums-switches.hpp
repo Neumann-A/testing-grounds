@@ -253,3 +253,19 @@ constexpr const char value1_str[] = "value1";
 enum_name<testenum, testenum::value1, value1_str> myname;
 
 static_assert(std::is_same_v<testenum, decltype(testenum::value1)>);
+
+template<typename EnumType, template <EnumType> typename EnumTypeSelector>
+struct enum_type_mapper {
+    using enum_type = EnumType;
+
+    template<typename EnumType,EnumType value, template <EnumType> typename EnumTypeSelector>
+    using type = EnumTypeSelector<value>;
+
+    template<>
+    static constexpr decltype(auto) make_variant();
+
+    template<>
+    static constexpr make_variant();
+
+    using variant_type = std::variant<>;
+};
