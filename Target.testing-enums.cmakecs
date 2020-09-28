@@ -4,7 +4,6 @@ EXECUTABLE
 PRIVATE_LINK_LIBRARIES
     fmt::fmt
     magic_enum::magic_enum
-    MyCEL::MyCEL
 PRIVATE_COMPILE_FEATURES
     cxx_std_20
 SOURCES
