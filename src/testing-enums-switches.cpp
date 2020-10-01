@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <vector>
 
 template <testenum value>
 struct testenum_functor
@@ -19,7 +20,7 @@ struct testenum_functor
 template <>
 struct testenum_functor<testenum::value3>
 {
-    int operator()(int a, double b)
+    int operator()(int, double)
     {
         std::cout << "BLA: " << (int) testenum::value3 << std::endl;
         return 5;

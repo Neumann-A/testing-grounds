@@ -8,6 +8,8 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
+#include <vector>
 
 #include <magic_enum.hpp>
 
@@ -191,6 +193,81 @@ struct enum_switch
     };
 };
 
+// Helper concept
+///////////////////////////////////////////////////////////////////
+template <typename T>
+struct is_std_array : std::false_type
+{
+};
+
+template <typename T, std::size_t N>
+struct is_std_array<std::array<T, N>> : std::true_type
+{
+};
+
+template <typename T>
+concept std_array = is_std_array<std::decay_t<T>>::value;
+///////////////////////////////////////////////////////////////////
+
+template <const auto &, template <auto...> typename, typename>
+struct unfold_array_on_type;
+template <typename T, std::size_t N, template <T...> typename Output_t, const std::array<T, N> &Input, std::size_t... I>
+struct unfold_array_on_type<Input, Output_t, std::index_sequence<I...>>
+{
+    using result_type = Output_t<Input[I]...>;
+};
+template <typename T, std::size_t N, template <T...> typename Output_t, const std::array<T, N> &Input, std::size_t... I>
+using unfold_array_on_type_result_t =
+    typename unfold_array_on_type<Input, Output_t, std::index_sequence<I...>>::result_type;
+
+template <const auto &Input, template <auto...> typename Output_t>
+struct apply_array_on_type
+{
+    using result_type =
+        typename unfold_array_on_type<Input, Output_t, std::make_index_sequence<Input.size()>>::result_type;
+};
+template <typename T, std::size_t N, template <T...> typename Output_t, const std::array<T, N> &Input>
+struct apply_array_on_type<Input, Output_t>
+{
+    using result_type = typename unfold_array_on_type<Input, Output_t, std::make_index_sequence<N>>::result_type;
+};
+template <std_array auto Input,
+          template <typename std::remove_reference_t<decltype(Input)>::value_type...> typename Output_t>
+using apply_array_on_type_result_t = typename apply_array_on_type<Input, Output_t>::result_type;
+
+template <typename EnumType, template <EnumType> typename MappingType, EnumType... Values>
+struct enum_variant_creator
+{
+    using type = std::variant<typename MappingType<Values>::mapped_type...>;
+};
+template <typename EnumType, template <EnumType> typename MappingType, EnumType... Values>
+using enum_variant_creator_t = typename enum_variant_creator<EnumType, MappingType, Values...>::type;
+
+template <const auto &Input, template <typename...> typename Output,
+          template <typename std::decay_t<decltype(Input)>::value_type...> typename Mapper, std::size_t... Is>
+constexpr auto apply_input_via_mapper_to_output_impl(std::index_sequence<Is...>)
+    -> Output<typename Mapper<Input.operator[](Is)>::mapped_type...>;
+
+template <const auto &Input, template <typename...> typename Output,
+          template <typename std::decay_t<decltype(Input)>::value_type...> typename Mapper>
+constexpr auto apply_input_via_mapper_to_output() -> decltype(
+    apply_input_via_mapper_to_output_impl<Input, Output, Mapper>(std::make_index_sequence<std::size(Input)>()));
+
+template <template <typename...> typename Output, const auto &Input,
+          template <std::remove_cvref_t<decltype(get<0>(Input))>...> typename Mapping, std::size_t... Is>
+constexpr auto map_values_to_types_impl(std::index_sequence<Is...>)
+    -> Output<typename Mapping<get<Is>(Input)>::mapped_type...>;
+template <template <typename...> typename Output, const auto &Input,
+          template <std::remove_cvref_t<decltype(get<0>(Input))>...> typename Mapping>
+constexpr auto map_values_to_types()
+    -> decltype(map_values_to_types_impl<Output, Input, Mapping>(std::make_index_sequence<size(Input)>()));
+template <template <typename...> typename Output, const auto &Input,
+          template <std::remove_cvref_t<decltype(get<0>(Input))>...> typename Mapping>
+using map_values_to_types_t = decltype(map_values_to_types<Output, Input, Mapping>());
+
+template <const auto &Input, template <std::remove_cvref_t<decltype(get<0>(Input))>...> typename Mapping>
+
+
 enum class testenum
 {
     value1,
@@ -201,6 +278,36 @@ enum class testenum
     value6,
     value7
 };
+
+template <testenum value>
+struct testenum_type_selector
+{
+    using mapped_type = double;
+    //using template_arg = value;
+};
+template <>
+struct testenum_type_selector<testenum::value4>
+{
+    using mapped_type = int;
+    //using template_arg = testenum::value4;
+};
+
+constexpr const std::array<testenum, 7> testenum_values = {testenum::value1, testenum::value2, testenum::value3,
+                                                           testenum::value4, testenum::value5, testenum::value6,
+                                                           testenum::value7};
+//constexpr const std::array<testenum,  magic_enum::enum_count<testenum>()> testenum_values = magic_enum::enum_values<testenum>();
+
+template <testenum... Values>
+using testenum_variant_helper_t = enum_variant_creator_t<testenum, testenum_type_selector, Values...>;
+using testenum_variant_t        = typename apply_array_on_type<testenum_values, testenum_variant_helper_t>::result_type;
+using testenum_variant2_t =
+    decltype(apply_input_via_mapper_to_output<testenum_values, std::variant, testenum_type_selector>());
+using testenum_variant3_t = map_values_to_types_t<std::variant, testenum_values, testenum_type_selector>;
+static_assert(std::is_same_v<typename std::variant_alternative_t<3, testenum_variant_t>, int>);
+static_assert(!std::is_same_v<typename std::variant_alternative_t<4, testenum_variant_t>, int>);
+static_assert(std::is_same_v<typename std::variant_alternative_t<4, testenum_variant_t>, double>);
+static_assert(std::is_same_v<typename std::variant_alternative_t<4, testenum_variant2_t>, double>);
+
 using test_enum_tuple = enum_tuple<testenum, testenum::value1, testenum::value2, testenum::value3, testenum::value4,
                                    testenum::value5, testenum::value6, testenum::value7>;
 
@@ -254,18 +361,47 @@ enum_name<testenum, testenum::value1, value1_str> myname;
 
 static_assert(std::is_same_v<testenum, decltype(testenum::value1)>);
 
-template<typename EnumType, template <EnumType> typename EnumTypeSelector>
-struct enum_type_mapper {
-    using enum_type = EnumType;
+//From https://godbolt.org/z/b7zKr4
+//
 
-    template<typename EnumType,EnumType value, template <EnumType> typename EnumTypeSelector>
-    using type = EnumTypeSelector<value>;
+// template<typename EnumType, template <EnumType> typename EnumTypeSelector>
+// struct enum_type_mapper {
+//     using enum_type = EnumType;
 
-    template<>
-    static constexpr decltype(auto) make_variant();
+//     template<typename EnumType,EnumType value, template <EnumType> typename EnumTypeSelector>
+//     using type = EnumTypeSelector<value>;
 
-    template<>
-    static constexpr make_variant();
+//     template<std::size_t index, typename VariantIn, typename AppendType>
+//     static constexpr decltype(auto) make_variant_impl();
+//     template<>
+//     static constexpr decltype(auto) make_variant();
 
-    using variant_type = std::variant<>;
+//     template<>
+//     static constexpr make_variant();
+
+//     using variant_type = std::variant<>;
+// };
+
+// constexpr std::array wheels = {1, 2, 3, 4, 6};
+
+// template <auto N>
+// requires(std::find(begin(wheels), end(wheels), N) != end(wheels)) // if you really want a concept this works
+// struct Vehicle {
+//     static constexpr auto n_wheels = N;
+// };
+
+// template <const auto& W, std::size_t... Is>
+// auto vehicle_variants(std::index_sequence<Is...>) -> std::variant<Vehicle<W.operator[](Is)>...>;
+
+// template <const auto& W>
+// auto vehicle_variants() -> decltype(vehicle_variants<W>(std::make_index_sequence<size(W)>()));
+
+// using Vehicles = decltype(vehicle_variants<wheels>());
+
+// using Garage = std::vector<Vehicles>;
+
+template <typename EnumType>
+struct enum_info
+{
+    static constexpr auto values = magic_enum::enum_values<EnumType>();
 };
