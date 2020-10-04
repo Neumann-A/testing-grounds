@@ -297,14 +297,12 @@ struct testenum_type_mapper<testenum::value4>
     //using template_arg = testenum::value4;
 };
 
-template< template <auto...> typename Type, auto T>
+template< template <auto...> typename T>
 struct identity_mapping
 {
-    using type = Type<T>;
-}
-template<auto T>
-using identity_mapper = identity_mapping<identity_mapper,T>;
-
+    template<auto U>
+    using type = T<U>;
+};
 
 constexpr const std::array<testenum, 7> testenum_values = {testenum::value1, testenum::value2, testenum::value3,
                                                            testenum::value4, testenum::value5, testenum::value6,
@@ -314,9 +312,9 @@ constexpr const std::array<testenum, 7> testenum_values = {testenum::value1, tes
 template <testenum... Values>
 using testenum_variant_helper_t = enum_variant_creator_t<testenum, testenum_type_mapper, Values...>;
 using test_nttp = apply_nttp_t<testenum_values,testenum_variant_helper_t>;
-using testenum_variant3_t = map_values_to_types_t<std::variant, testenum_values, >;
+using testenum_variant3_t = map_values_to_types_t<std::variant, testenum_values, testenum_type_mapper>;
 
-using testenum_variant3_t = map_values_to_types_t<std::variant, testenum_values, identity_mapping<>>;
+using testenum_variant4_t = map_values_to_types_t<std::variant, testenum_values, identity_mapping<testenum_type_mapper>::type>;
 
 static_assert(std::is_same_v<testenum_variant3_t,test_nttp>);
 
