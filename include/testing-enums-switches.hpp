@@ -57,14 +57,6 @@ template <MyCEL::std_array auto Input,
           template <typename std::remove_reference_t<decltype(Input)>::value_type...> typename Output_t>
 using apply_array_on_type_result_t = typename apply_array_on_type<Input, Output_t>::result_type;
 
-template <typename EnumType, template <EnumType> typename MappingType, EnumType... Values>
-struct enum_variant_creator
-{
-    using type = std::variant<typename MappingType<Values>::type...>;
-};
-template <typename EnumType, template <EnumType> typename MappingType, EnumType... Values>
-using enum_variant_creator_t = typename enum_variant_creator<EnumType, MappingType, Values...>::type;
-
 template <const auto &Input, template <typename...> typename Output,
           template <typename std::decay_t<decltype(Input)>::value_type...> typename Mapper, std::size_t... Is>
 constexpr auto apply_input_via_mapper_to_output_impl(std::index_sequence<Is...>)
@@ -124,7 +116,7 @@ constexpr const std::array<testenum, 7> testenum_values = {testenum::value1, tes
 //constexpr const std::array<testenum,  magic_enum::enum_count<testenum>()> testenum_values = magic_enum::enum_values<testenum>();
 
 template <testenum... Values>
-using testenum_variant_helper_t = enum_variant_creator_t<testenum, testenum_type_mapper, Values...>;
+using testenum_variant_helper_t = MyCEL::enum_variant_creator_t<testenum, testenum_type_mapper, Values...>;
 using test_nttp = apply_nttp_t<testenum_values,testenum_variant_helper_t>;
 using testenum_variant3_t = map_values_to_types_t<std::variant, testenum_values, testenum_type_mapper>;
 
