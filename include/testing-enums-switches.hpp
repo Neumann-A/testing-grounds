@@ -138,11 +138,13 @@ static_assert(std::is_same_v<typename std::variant_alternative_t<4, testenum_var
 
 using test_enum_tuple = enum_tuple<testenum, testenum::value1, testenum::value2, testenum::value3, testenum::value4,
                                    testenum::value5, testenum::value6, testenum::value7>;
-
+using test_enum_tuple2 = MyCEL::make_enum_tuple_type<testenum>;
 static_assert(test_enum_tuple::count == magic_enum::enum_count<testenum>());
 static_assert(enum_tuple_element<1, test_enum_tuple>::enum_value == magic_enum::enum_value<testenum>(1));
 static_assert(enum_tuple_index<test_enum_tuple, testenum::value2>() == 1);
 static_assert(std::is_same_v<decltype(make_enum_tuple<testenum>()), test_enum_tuple>);
+
+static_assert(std::is_same_v<test_enum_tuple2,test_enum_tuple>);
 
 struct enum_traits
 {
