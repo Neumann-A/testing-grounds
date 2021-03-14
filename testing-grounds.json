@@ -1,0 +1,17 @@
+{
+    "name" : "testing-grounds" ,
+    "package_name" : "tg",
+    "homepage" : "https://github.com/Neumann-A/testing-grounds",
+    "description" : "Just testing stuff",
+    "version" : "0.1.0",
+    "languages" : ["CXX"],
+    "dependencies" : [
+        "fmt",
+        "magic_enum",
+        "MyCEL"
+    ],
+    "list" : [
+        "testing-grounds.target.json"
+    ]
+}
+

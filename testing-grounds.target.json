@@ -1,0 +1,22 @@
+{
+    "name" : "testing-enums" ,
+    "target_type" : "executable",
+    "sources" : [
+        "src/testing-enums-switches.cpp",
+        "include/testing-enums-switches.hpp"
+    ],
+    "include_directories" : {
+        "private" : [ 
+            "include" ]
+    },
+    "link_libraries" : {
+        "private": [
+            "fmt::fmt",
+            "magic_enum::magic_enum",
+            "MyCEL::MyCEL"
+        ]
+    },
+    "compile_features" : {
+        "private" : ["cxx_std_20"]
+    }
+}

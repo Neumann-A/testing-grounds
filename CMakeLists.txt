@@ -4,11 +4,11 @@ set(CMAKE_MESSAGE_LOG_LEVEL VERBOSE CACHE STRING "CMake message log level (defau
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-if(NOT CMakeCS_FOUND)
-    find_package(CMakeCS REQUIRED)
+if(NOT CMakeJSON_FOUND)
+    find_package(CMakeJSON REQUIRED)
 endif()
 
-project("Project.testing-grounds.cmakecs")
+project("testing-grounds.json")
 
 
 set(MY_MESSAGE "Reconfiguring!")
