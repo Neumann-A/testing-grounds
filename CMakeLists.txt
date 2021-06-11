@@ -9,9 +9,3 @@ if(NOT CMakeJSON_FOUND)
 endif()
 
 project("testing-grounds.json")
-
-
-set(MY_MESSAGE "Reconfiguring!")
-set(MY_MESSAGE "${MY_MESSAGE}" CACHE STRING "Message to print!" FORCE)
-set(MY_MESSAGE "First configure!" CACHE STRING "Message to print!")
-message(STATUS "MY_MESSAGE:${MY_MESSAGE}")
