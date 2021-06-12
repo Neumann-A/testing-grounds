@@ -20,7 +20,7 @@
 
 #include <MyCEL/basics/templatehelpers.h>
 #include <MyCEL/basics/enumhelpers.h>
-#include <MyCEL/basics/concepts.h>
+#include <MyCEL/basics/concepts.hpp>
 #include <MyCEL/types/static_map.hpp>
 
 
