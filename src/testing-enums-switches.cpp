@@ -47,7 +47,7 @@ int main()
     std::cout << "Input " << input << std::endl;
     value = static_cast<testenum>(input);
     std::cout << "Value:" << (int) value << std::endl;
-    auto res = enum_switch::run<testenum, default_functor, testenum_functor>(value, a, b);
+    auto res = enum_switch::run<testenum, testenum_functor, default_functor>(value, a, b);
     std::cout << "Switch:" << res << std::endl;
     std::puts("Hello testing-grounds!");
     return 0;
