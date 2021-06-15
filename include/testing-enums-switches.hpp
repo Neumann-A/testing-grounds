@@ -189,7 +189,7 @@ struct enum_name
 };
 
 constexpr const char value1_str[] = "value1";
-enum_name<testenum, testenum::value1, value1_str> myname;
+[[maybe_unused]] enum_name<testenum, testenum::value1, value1_str> myname;
 
 static_assert(std::is_same_v<testenum, decltype(testenum::value1)>);
 
