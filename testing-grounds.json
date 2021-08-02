@@ -8,10 +8,15 @@
     "dependencies" : [
         "fmt",
         "magic_enum",
-        "MyCEL"
+        "MyCEL",
+        {
+            "name" : "Qt6",
+            "components" : [ "Widgets", "Quick", "Qml", "QuickControls2", "QmlImportScanner"]
+        }
     ],
     "list" : [
-        "testing-grounds.target.json"
+        "testing-grounds.target.json",
+        "testing-qml.target.json"
     ]
 }
 

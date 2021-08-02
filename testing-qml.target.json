@@ -1,0 +1,28 @@
+{
+    "name" : "testing-qml" ,
+    "target_type" : "executable",
+    "sources" : [
+        "src/testing-qml.cpp",
+        "src/qml.qrc",
+        "src/testing.qml",
+        "include/testing-qml.hpp"
+    ],
+    "include_directories" : {
+        "private" : [ 
+            "include" ]
+    },
+    "link_libraries" : {
+        "private": [
+            "fmt::fmt",
+            "magic_enum::magic_enum",
+            "MyCEL::MyCEL",
+            "Qt::Widgets",
+            "Qt::Quick",
+            "Qt::Qml",
+            "Qt6::QuickControls2"
+        ]
+    },
+    "compile_features" : {
+        "private" : ["cxx_std_20"]
+    }
+}
