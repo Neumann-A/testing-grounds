@@ -24,5 +24,8 @@
     },
     "compile_features" : {
         "private" : ["cxx_std_20"]
+    },
+    "compile_definitions" : {
+        "public" : ["$<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>"]
     }
 }

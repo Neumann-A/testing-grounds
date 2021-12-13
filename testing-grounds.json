@@ -11,12 +11,14 @@
         "MyCEL",
         {
             "name" : "Qt6",
-            "components" : [ "Widgets", "Quick", "Qml", "QuickControls2", "QmlImportScanner"]
-        }
+            "components" : [ "Widgets", "Gui", "Charts", "Quick", "Qml", "QuickControls2", "QmlImportScanner"]
+        },
+        "qtadvanceddocking"
     ],
     "list" : [
         "testing-grounds.target.json",
-        "testing-qml.target.json"
+        "testing-qml.target.json",
+        "testing-qt.target.json"
     ]
 }
 

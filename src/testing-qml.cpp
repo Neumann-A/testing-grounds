@@ -1,6 +1,9 @@
 
 #include <QApplication>
 #include <QtQuick>
+
+#include "testing-qml.hpp"
+
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);

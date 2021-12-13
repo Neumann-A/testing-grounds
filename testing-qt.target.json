@@ -1,0 +1,28 @@
+{
+    "name" : "testing-qt" ,
+    "target_type" : "executable",
+    "sources" : [
+        "src/testing-qt.cpp",
+        "src/testing-qt-mainwindow.cpp",
+        "include/testing-qt.hpp",
+        "include/testing-qt-mainwindow.hpp"
+    ],
+    "include_directories" : {
+        "private" : [ 
+            "include" ]
+    },
+    "link_libraries" : {
+        "private": [
+            "fmt::fmt",
+            "Qt::Core",
+            "Qt::Gui",
+            "Qt::Widgets",
+            "Qt::Charts",
+            "Qt::Svg",
+            "ads::qtadvanceddocking"
+        ]
+    },
+    "compile_features" : {
+        "private" : ["cxx_std_20"]
+    }
+}
