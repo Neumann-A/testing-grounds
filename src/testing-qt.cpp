@@ -21,6 +21,18 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 
+#include <QwtPlot>
+#include <QwtPlotCurve>
+#include <QwtPlotCanvas>
+#include <QwtPlotPanner>
+#include <QwtPlotMagnifier>
+#include <QwtPlotPicker>
+#include <QwtPlotZoomer>
+#include <QwtLegend>
+#include <QwtKnob>
+#include <QwtAnalogClock>
+#include <QwtSlider>
+
 #include <DockManager.h>
 
 struct QDockInit {
@@ -104,27 +116,67 @@ Qt_TestApplication::Qt_TestApplication(int argc, char *argv[]) : QApplication(ar
     logDock->setWidget(logDockWidget);
 
     auto testdock_0 = setUpNewDockWidget(mainWindow,*m_DockManager, *viewsmenu,{.area=ads::RightDockWidgetArea,.title="Test0"});
-    auto testwidget_0 = new QWidget(testdock_0);
+    auto testwidget_0 = new QFrame(testdock_0);
+    testwidget_0->setFrameShape( QFrame::Box); 
+    testwidget_0->setLineWidth(10);
     testwidget_0->setLayout(new QGridLayout(testwidget_0));
     testwidget_0->layout()->setObjectName(QString::fromUtf8("dock_test_widget_0_layout"));
     testdock_0->setWidget(testwidget_0);
+    auto plotwidget_0 = new QwtPlot(testwidget_0);
+    //testwidget_0->layout()->setSizeConstraint(QLayout::SetMinAndMaxSize);
+    static_cast<QGridLayout*>(testwidget_0->layout())->addWidget(plotwidget_0,0,0,1,1);
+    plotwidget_0->setTitle("My Plot");
+    plotwidget_0->setAxisTitle(QwtAxis::XBottom,"x in a.u.");
+    plotwidget_0->setAxisTitle(QwtAxis::YLeft,"y in a.u.");
+
+    plotwidget_0->insertLegend( new QwtLegend(), QwtPlot::RightLegend );
+    // canvas
+    QwtPlotCanvas* canvas = new QwtPlotCanvas(plotwidget_0);
+    canvas->setLineWidth( 2 );
+    canvas->setFrameStyle( (int)QFrame::Box | (int)QFrame::Plain );
+    plotwidget_0->setCanvas(canvas);
+    canvas->setBorderRadius( 15 );
+    QPalette canvasPalette( Qt::white );
+    canvasPalette.setColor( QPalette::WindowText, QColor( 133, 190, 232 ) );
+    canvas->setPalette( canvasPalette );
+
+    ( void ) new QwtPlotZoomer ( canvas );
+    //
+    ( void ) new QwtPlotPicker ( canvas );
+    // panning with the left mouse button
+    ( void ) new QwtPlotPanner( canvas );
+
+    // zoom in/out with the wheel
+    ( void ) new QwtPlotMagnifier( canvas );
+
+    //plotwidget_0->setStyleSheet("border:10px solid rgb(0, 255, 0); ");
+    //auto testwidget_0_1 = new QFrame(testdock_0);
+    //testwidget_0_1->setFrameShape( QFrame::Box); 
+    //testwidget_0_1->setLineWidth(10);
+    //static_cast<QGridLayout*>(testwidget_0->layout())->addWidget(testwidget_0_1,1,0,1,1);
+    
+    //static_cast<QGridLayout*>(testwidget_0->layout())->setStyleSheet("border:10px solid rgb(0, 255, 0); ");
 
     auto tooldock = setUpNewDockWidget(mainWindow,*m_DockManager, *viewsmenu,{.title="Tools"});
     auto toolWidget = new QWidget(tooldock);
     toolWidget->setLayout(new QGridLayout(toolWidget));
     toolWidget->layout()->setObjectName(QString::fromUtf8("dock_tool_widget_layout"));
+    static_cast<QGridLayout*>(toolWidget->layout())->addWidget(new QwtSlider(toolWidget),0,0,1,1);
     tooldock->setWidget(toolWidget);
 
     auto testdock_1 = setUpNewDockWidget(mainWindow,*m_DockManager, *viewsmenu,{.area=ads::BottomDockWidgetArea,.title="Test1"});
     auto testwidget_1 = new QWidget(testdock_1);
     testwidget_1->setLayout(new QGridLayout(testwidget_1));
     testwidget_1->layout()->setObjectName(QString::fromUtf8("dock_test_widget_1_layout"));
+    static_cast<QGridLayout*>(testwidget_1->layout())->addWidget(new QwtAnalogClock(testwidget_1),0,0,1,1);
     testdock_1->setWidget(testwidget_1);
+    
 
     auto testdock_2 = setUpNewDockWidget(mainWindow,*m_DockManager, *viewsmenu,{.area=ads::RightDockWidgetArea,.title="Test2"});
     auto testwidget_2 = new QWidget(testdock_2);
     testwidget_2->setLayout(new QGridLayout(testwidget_2));
     testwidget_2->layout()->setObjectName(QString::fromUtf8("dock_test_widget_2_layout"));
+    static_cast<QGridLayout*>(testwidget_2->layout())->addWidget(new QwtKnob(testwidget_2),0,0,1,1);
     testdock_2->setWidget(testwidget_2);
 
     //mainWindow.tabifyDockWidget(logDock, tooldock);

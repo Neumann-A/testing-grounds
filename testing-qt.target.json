@@ -19,7 +19,8 @@
             "Qt::Widgets",
             "Qt::Charts",
             "Qt::Svg",
-            "ads::qtadvanceddocking"
+            "ads::qtadvanceddocking",
+            "qwt::qwt"
         ]
     },
     "compile_features" : {

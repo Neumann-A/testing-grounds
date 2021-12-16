@@ -13,7 +13,8 @@
             "name" : "Qt6",
             "components" : [ "Widgets", "Gui", "Charts", "Quick", "Qml", "QuickControls2", "QmlImportScanner"]
         },
-        "qtadvanceddocking"
+        "qtadvanceddocking",
+        "qwt"
     ],
     "list" : [
         "testing-grounds.target.json",
