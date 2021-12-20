@@ -19,7 +19,8 @@
     "list" : [
         "testing-grounds.target.json",
         "testing-qml.target.json",
-        "testing-qt.target.json"
+        "testing-qt.target.json",
+        "qt-adv-plot.target.json"
     ]
 }
 

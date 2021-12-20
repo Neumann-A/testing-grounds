@@ -20,6 +20,7 @@
 #include <QStatusBar>
 #include <QTabWidget>
 #include <QVBoxLayout>
+#include <QFont>
 
 #include <QwtPlot>
 #include <QwtPlotCurve>
@@ -32,8 +33,12 @@
 #include <QwtKnob>
 #include <QwtAnalogClock>
 #include <QwtSlider>
+#include <QwtScaleWidget>
+#include <QwtScaleDraw>
+#include <QwtScaleDiv>
 
 #include <DockManager.h>
+#include <qwt_axis.h>
 
 struct QDockInit {
     QFlags<ads::CDockWidget::DockWidgetFeature> features {ads::CDockWidget::DefaultDockWidgetFeatures};
@@ -128,6 +133,10 @@ Qt_TestApplication::Qt_TestApplication(int argc, char *argv[]) : QApplication(ar
     plotwidget_0->setTitle("My Plot");
     plotwidget_0->setAxisTitle(QwtAxis::XBottom,"x in a.u.");
     plotwidget_0->setAxisTitle(QwtAxis::YLeft,"y in a.u.");
+    plotwidget_0->axisWidget(QwtAxis::YLeft)->scaleDraw()->setPenWidthF(2);
+    plotwidget_0->axisWidget(QwtAxis::YLeft)->scaleDraw()->setTickLength(QwtScaleDiv::TickType::MajorTick, 20.0);
+    auto label = plotwidget_0->axisWidget(QwtAxis::YLeft)->scaleDraw();
+    //plotwidget_0->axisWidget(QwtAxis::YLeft)->scaleDraw()->enableComponent(ScaleComponent::)
 
     plotwidget_0->insertLegend( new QwtLegend(), QwtPlot::RightLegend );
     // canvas
@@ -139,6 +148,8 @@ Qt_TestApplication::Qt_TestApplication(int argc, char *argv[]) : QApplication(ar
     QPalette canvasPalette( Qt::white );
     canvasPalette.setColor( QPalette::WindowText, QColor( 133, 190, 232 ) );
     canvas->setPalette( canvasPalette );
+    canvas->setBorderRadius(0.0);
+    canvas->setFocusIndicator(QwtPlotAbstractCanvas::ItemFocusIndicator);
 
     ( void ) new QwtPlotZoomer ( canvas );
     //
