@@ -4,16 +4,16 @@
     "target_type" : "executable",
     "sources" : [
         "src/qt-adv-plot/main.cpp",
-        "src/qt-adv-plot/plot.cpp",
-        "src/qt-adv-plot/scale.cpp",
-        "src/qt-adv-plot/legend.cpp",
-        "src/qt-adv-plot/layout.cpp",
-        "src/qt-adv-plot/canvas.cpp",
-        "include/qt-adv-plot/plot.hpp",
-        "include/qt-adv-plot/scale.hpp",
-        "include/qt-adv-plot/legend.hpp",
-        "include/qt-adv-plot/layout.hpp",
-        "include/qt-adv-plot/canvas.hpp"
+        "src/qt-adv-plot/qadv_plot.cpp",
+        "src/qt-adv-plot/qadv_scale.cpp",
+        "src/qt-adv-plot/qadv_legend.cpp",
+        "src/qt-adv-plot/qadv_layout.cpp",
+        "src/qt-adv-plot/qadv_canvas.cpp",
+        "include/qt-adv-plot/qadv_plot.hpp",
+        "include/qt-adv-plot/qadv_scale.hpp",
+        "include/qt-adv-plot/qadv_legend.hpp",
+        "include/qt-adv-plot/qadv_layout.hpp",
+        "include/qt-adv-plot/qadv_canvas.hpp"
     ],
     "include_directories" : {
         "private" : [ 
@@ -28,7 +28,9 @@
             "Qt::Charts",
             "Qt::Svg",
             "ads::qtadvanceddocking",
-            "qwt::qwt"
+            "qwt::qwt",
+            "qcustomplot::qcustomplot",
+            "qt_imgui_widgets"
         ]
     },
     "compile_features" : {

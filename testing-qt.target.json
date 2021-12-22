@@ -20,7 +20,8 @@
             "Qt::Charts",
             "Qt::Svg",
             "ads::qtadvanceddocking",
-            "qwt::qwt"
+            "qwt::qwt",
+            "qcustomplot::qcustomplot"
         ]
     },
     "compile_features" : {

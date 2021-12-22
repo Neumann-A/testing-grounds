@@ -1,4 +1,4 @@
-#include "scale.hpp"
+#include "qadv_scale.hpp"
 
 #include <QwtScaleMap>
 #include <QwtScaleDiv>

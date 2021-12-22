@@ -1,4 +1,4 @@
-#include "layout.hpp"
+#include "qadv_layout.hpp"
 #include <QwtPlotLayout>
 #include <QwtScaleWidget>
 #include <QwtScaleDraw>

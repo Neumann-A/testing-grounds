@@ -4,6 +4,7 @@
 #include <ads_globals.h>
 #include <qapplication.h>
 #include <qgridlayout.h>
+#include <qopenglwidget.h>
 #include <qsettings.h>
 
 #include <QVariant>
@@ -39,6 +40,11 @@
 
 #include <DockManager.h>
 #include <qwt_axis.h>
+#include <QOpenGLWidget>
+
+#include <imgui.h>
+#include <implot.h>
+#include <QtImGui.h>
 
 struct QDockInit {
     QFlags<ads::CDockWidget::DockWidgetFeature> features {ads::CDockWidget::DefaultDockWidgetFeatures};
@@ -81,10 +87,7 @@ Qt_TestApplication::~Qt_TestApplication() noexcept {
 Qt_TestApplication::Qt_TestApplication(int argc, char *argv[]) : QApplication(argc,argv), mainWindow() {
     mainWindow.setObjectName(QString::fromUtf8("main_window"));
     mainWindow.layout()->setObjectName(QString::fromUtf8("main_layout"));
-    ads::CDockManager::setConfigFlags(ads::CDockManager::DefaultOpaqueConfig);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::RetainTabSizeWhenCloseButtonHidden, true);
-    ads::CDockManager::setConfigFlag(ads::CDockManager::DockAreaHideDisabledButtons, true);
-    m_DockManager = new ads::CDockManager(&mainWindow);
+
     //m_DockManager->setStyleSheet("");
 
     statusbar = new QStatusBar(&mainWindow);

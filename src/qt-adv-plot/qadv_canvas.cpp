@@ -1,4 +1,4 @@
-#include "canvas.hpp"
+#include "qadv_canvas.hpp"
 
 #include <QwtPlotCanvas>
 
@@ -15,4 +15,4 @@ QAdvPlotCanvas::~QAdvPlotCanvas() noexcept {
 
 };
 
-#include "moc_canvas.cpp"
+#include "moc_qadv_canvas.cpp"

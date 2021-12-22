@@ -1,7 +1,7 @@
 #pragma once
 
-#include "scale.hpp"
-#include "canvas.hpp"
+#include "qadv_scale.hpp"
+#include "qadv_canvas.hpp"
 
 #include <QwtPlot>
 

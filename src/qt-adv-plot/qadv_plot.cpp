@@ -1,7 +1,7 @@
-#include "plot.hpp"
-#include "canvas.hpp"
-#include "scale.hpp"
-#include "layout.hpp"
+#include "qadv_plot.hpp"
+#include "qadv_canvas.hpp"
+#include "qadv_scale.hpp"
+#include "qadv_layout.hpp"
 #include <QWidget>
 #include <QwtPlotLayout>
 #include <QwtScaleWidget>
@@ -72,4 +72,4 @@ QAdvPlot::QAdvPlot(const QAdvPlot_Settings& settings, QWidget * parent) : QAdvPl
     //this->axisWidget(QwtPlot::xTop)->stackUnder(this->canvas());
 }
 
-#include "moc_plot.cpp"
+#include "moc_qadv_plot.cpp"

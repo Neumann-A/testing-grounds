@@ -14,7 +14,9 @@
             "components" : [ "Widgets", "Gui", "Charts", "Quick", "Qml", "QuickControls2", "QmlImportScanner"]
         },
         "qtadvanceddocking",
-        "qwt"
+        "qwt",
+        "qcustomplot",
+        "qtimgui"
     ],
     "list" : [
         "testing-grounds.target.json",
