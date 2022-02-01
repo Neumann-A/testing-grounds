@@ -9,11 +9,15 @@
         "src/qt-adv-plot/qadv_legend.cpp",
         "src/qt-adv-plot/qadv_layout.cpp",
         "src/qt-adv-plot/qadv_canvas.cpp",
+        "src/qt-adv-plot/qadv_imgui.cpp",
+        "src/qt-adv-plot/qadv_qcustomplot.cpp",
         "include/qt-adv-plot/qadv_plot.hpp",
         "include/qt-adv-plot/qadv_scale.hpp",
         "include/qt-adv-plot/qadv_legend.hpp",
         "include/qt-adv-plot/qadv_layout.hpp",
-        "include/qt-adv-plot/qadv_canvas.hpp"
+        "include/qt-adv-plot/qadv_canvas.hpp",
+        "include/qt-adv-plot/qadv_imgui.hpp",
+        "include/qt-adv-plot/qadv_qcustomplot.hpp"
     ],
     "include_directories" : {
         "private" : [ 
