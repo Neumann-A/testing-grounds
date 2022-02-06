@@ -78,10 +78,10 @@ public:
             auto qcustomplotPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-plot"});
             qcustomplotPlotDock->setWidget(new QAdvCustomPlot(&mainWindow));
         }
-        {
-            auto imguiPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="imgui-plot"});
-            imguiPlotDock->setWidget(new QAdvImguiPlot(&mainWindow));
-        }
+        //{
+        //    auto imguiPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="imgui-plot"});
+        //    imguiPlotDock->setWidget(new QAdvImguiPlot(&mainWindow));
+        //}
         mainWindow.show();
     }
     ~QtAdvPlot_App() noexcept override {};
