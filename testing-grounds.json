@@ -16,7 +16,11 @@
         "qtadvanceddocking",
         "qwt",
         "qcustomplot",
-        "qtimgui"
+        "qtimgui",
+        {
+            "name" : "QtSolutions",
+            "components" : ["PropertyBrowser"]
+        }
     ],
     "list" : [
         "testing-grounds.target.json",

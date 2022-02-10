@@ -21,7 +21,8 @@
             "Qt::Svg",
             "ads::qtadvanceddocking",
             "qwt::qwt",
-            "qcustomplot::qcustomplot"
+            "qcustomplot::qcustomplot",
+            "QtSolutions::PropertyBrowser"
         ]
     },
     "compile_features" : {
