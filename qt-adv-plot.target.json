@@ -34,7 +34,8 @@
             "ads::qtadvanceddocking",
             "qwt::qwt",
             "qcustomplot::qcustomplot",
-            "qt_imgui_widgets"
+            "qt_imgui_widgets",
+            "QtSolutions::PropertyBrowser"
         ]
     },
     "compile_features" : {
