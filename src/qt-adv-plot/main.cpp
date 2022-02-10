@@ -18,6 +18,10 @@
 #include "qadv_imgui.hpp"
 #include "qadv_qcustomplot.hpp"
 
+#include <QtTreePropertyBrowser>
+#include <QtVariantEditorFactory>
+#include <QtVariantProperty>
+#include <QtVariantPropertyManager>
 
 
 struct QDockInit {
@@ -54,6 +58,12 @@ class QtAdvPlot_App : public QApplication {
 private:
     QMainWindow mainWindow;
     ads::CDockManager* m_DockManager;
+
+    QAdvCustomPlot * customplot;
+
+    QtVariantPropertyManager *variantManager;
+    QtVariantEditorFactory *variantEditor;
+    QtTreePropertyBrowser *browser;
 protected:
     //bool event(QEvent *e) override;
 public:
@@ -75,8 +85,66 @@ public:
             qwtPlotDock->setWidget(new QAdvPlot({}, &mainWindow));
         }
         {
+            customplot = new QAdvCustomPlot(&mainWindow);
             auto qcustomplotPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-plot"});
-            qcustomplotPlotDock->setWidget(new QAdvCustomPlot(&mainWindow));
+            qcustomplotPlotDock->setWidget(customplot);
+        }
+        {
+            variantManager = new QtVariantPropertyManager(&mainWindow);
+            connect(variantManager, &QtVariantPropertyManager::valueChanged,
+                        [this](QtProperty * prop, const QVariant & variant){
+                            this->customplot->setProperty(prop->propertyName().toUtf8().data(), variant);
+                        });
+            // connect(customplot, &QAdvCustomPlot::update,
+            //             [this](QtProperty * prop, const QVariant & variant){
+            //                 this->customplot->setProperty(prop->propertyName().toUtf8().data(), variant);
+            //             });
+
+
+            //customplot->setProperty(const char *name, const QVariant &value)
+            variantEditor = new QtVariantEditorFactory(this);
+            browser = new QtTreePropertyBrowser(&mainWindow);
+            browser->setFactoryForManager(variantManager, variantEditor);
+
+            QtVariantProperty *priority = variantManager->addProperty(QVariant::Int, "Priority");
+            priority->setAttribute("minimum", 1);
+            priority->setAttribute("maximum", 5);
+            priority->setValue(3);
+            browser->addProperty(priority);
+
+            auto metaobj = customplot->metaObject();
+            auto prop_count = metaobj->propertyCount();
+            QStringList properties;
+            auto j = 0;
+            for(auto i = 0; i < prop_count; i++) {
+                auto prop = metaobj->property(i);
+                auto read_prop = prop.read(customplot);
+                properties << QString::fromLatin1(prop.name());
+                if(read_prop.isValid() && !read_prop.isNull()) {
+                    if(read_prop.type() > 65000) {
+                        continue;
+                    }
+                    auto added_props = variantManager->addProperty(read_prop.type(),prop.name());
+                    if(added_props) {
+                        added_props->setValue(std::move(read_prop));
+                        qDebug() << "Added property: " << prop.name() << "/" << read_prop.typeId() << "read_prop" << read_prop;
+                        auto item = browser->addProperty(added_props);
+                        item->property()->setEnabled(prop.isWritable());
+                    } else {
+                        qDebug() << "Unable to add property: " << prop.name() << "/" << read_prop.typeId() << "/" << read_prop;
+                        j++;
+                    }
+                }
+                else {
+                    qDebug() << "Is invalid or null:" << read_prop;
+                }
+            }
+            qDebug() << j << "/"<< prop_count;
+            qDebug() << properties;
+            // dynamicPropertyNames() 
+           
+            auto qcustomplotPlotPropertyDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-properties"});
+            qcustomplotPlotPropertyDock->setWidget(browser);
         }
         //{
         //    auto imguiPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="imgui-plot"});
@@ -84,7 +152,11 @@ public:
         //}
         mainWindow.show();
     }
-    ~QtAdvPlot_App() noexcept override {};
+    ~QtAdvPlot_App() noexcept override {
+        delete variantManager;
+        delete browser;
+        delete variantEditor;
+    };
 };
 
 int main(int argc, char *argv[])

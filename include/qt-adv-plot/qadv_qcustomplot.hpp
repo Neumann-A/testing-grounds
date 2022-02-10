@@ -1,10 +1,7 @@
 #pragma once
 
 #include <qcustomplot.h>
-#include <QtTreePropertyBrowser>
-#include <QtVariantEditorFactory>
-#include <QtVariantProperty>
-#include <QtVariantPropertyManager>
+
 
 
 
@@ -20,7 +17,5 @@ public:
     ~QAdvCustomPlot() override;
     void contextMenuEvent(QContextMenuEvent *event) override;
 private:
-    QtVariantPropertyManager *variantManager;
-    QtVariantEditorFactory *variantEditor;
-    QtTreePropertyBrowser *browser;
+
 };

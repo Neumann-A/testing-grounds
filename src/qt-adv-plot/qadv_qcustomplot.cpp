@@ -63,42 +63,6 @@ namespace
 QAdvCustomPlot::QAdvCustomPlot(QWidget *parent)
     : QCustomPlot(parent)
 {
-    variantManager = new QtVariantPropertyManager();
-    browser= new QtTreePropertyBrowser(this);
-    variantEditor = new QtVariantEditorFactory();
-    QtVariantProperty *priority = variantManager->addProperty(QMetaType::Int, "Priority");
-    priority->setAttribute("minimum", 1);
-    priority->setAttribute("maximum", 5);
-    priority->setValue(3);
-
-    auto metaobj = this->metaObject();
-    auto prop_count = metaobj->propertyCount();
-    QStringList properties;
-    auto j = 0;
-    for(auto i = 0; i < prop_count; i++) {
-        auto prop = metaobj->property(i);
-        auto read_prop = prop.read(this);
-        properties << QString::fromLatin1(prop.name());
-        if(read_prop.isValid() && !read_prop.isNull()) {
-            auto added_props = variantManager->addProperty(read_prop.type(),prop.name());
-            if(added_props) {
-                added_props->setValue(std::move(read_prop));
-                qDebug() << "Added property: " << prop.name() << "/" << read_prop.typeId() << "read_prop" << read_prop;
-            } else {
-                qDebug() << "Unable to add property: " << prop.name() << "/" << read_prop.typeId() << "/" << read_prop;
-                j++;
-            }
-        }
-        else {
-            qDebug() << "Is invalid or null:" << read_prop;
-        }
-    }
-    qDebug() << j << "/"<< prop_count;
-    qDebug() << properties;
-    // dynamicPropertyNames() 
-    browser->setFactoryForManager(variantManager, variantEditor);
-    browser->show();
-
     setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes | QCP::iSelectLegend | QCP::iSelectPlottables);
 
     axisRect()->setupFullAxesBox();
@@ -123,9 +87,7 @@ QAdvCustomPlot::QAdvCustomPlot(QWidget *parent)
     setContextMenuPolicy(Qt::ContextMenuPolicy::DefaultContextMenu);
 };
 QAdvCustomPlot::~QAdvCustomPlot(){
-    delete variantManager;
-    delete browser;
-    delete variantEditor;
+
 };
 
 void QAdvCustomPlot::contextMenuEvent(QContextMenuEvent *event)
