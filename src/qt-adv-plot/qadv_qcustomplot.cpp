@@ -90,6 +90,11 @@ QAdvCustomPlot::~QAdvCustomPlot(){
 
 };
 
+bool QAdvCustomPlot::event(QEvent *event) {
+    Q_EMIT propertyChanged();
+    return QWidget::event(event);
+};
+
 void QAdvCustomPlot::contextMenuEvent(QContextMenuEvent *event)
 {
 

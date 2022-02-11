@@ -11,6 +11,7 @@
 #include <QMenu>
 
 #include <DockManager.h>
+#include <qtvariantproperty.h>
 
 #include "qt-adv-plot.hpp"
 
@@ -18,11 +19,12 @@
 #include "qadv_imgui.hpp"
 #include "qadv_qcustomplot.hpp"
 
+#include "widgeteventfilter.hpp"
+
 #include <QtTreePropertyBrowser>
 #include <QtVariantEditorFactory>
 #include <QtVariantProperty>
 #include <QtVariantPropertyManager>
-
 
 struct QDockInit {
     QFlags<ads::CDockWidget::DockWidgetFeature> features {ads::CDockWidget::DefaultDockWidgetFeatures};
@@ -64,6 +66,9 @@ private:
     QtVariantPropertyManager *variantManager;
     QtVariantEditorFactory *variantEditor;
     QtTreePropertyBrowser *browser;
+    WidgetEventFilter *filter;
+
+    QMap<QString, QtVariantProperty*> propMap;
 protected:
     //bool event(QEvent *e) override;
 public:
@@ -91,26 +96,35 @@ public:
         }
         {
             variantManager = new QtVariantPropertyManager(&mainWindow);
-            connect(variantManager, &QtVariantPropertyManager::valueChanged,
-                        [this](QtProperty * prop, const QVariant & variant){
-                            this->customplot->setProperty(prop->propertyName().toUtf8().data(), variant);
+            connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
+                        [=,this](QtProperty * prop, const QVariant & variant){
+                            customplot->setProperty(prop->propertyName().toUtf8().data(), variant);
                         });
-            // connect(customplot, &QAdvCustomPlot::update,
-            //             [this](QtProperty * prop, const QVariant & variant){
-            //                 this->customplot->setProperty(prop->propertyName().toUtf8().data(), variant);
-            //             });
 
-
-            //customplot->setProperty(const char *name, const QVariant &value)
             variantEditor = new QtVariantEditorFactory(this);
             browser = new QtTreePropertyBrowser(&mainWindow);
             browser->setFactoryForManager(variantManager, variantEditor);
 
-            QtVariantProperty *priority = variantManager->addProperty(QVariant::Int, "Priority");
-            priority->setAttribute("minimum", 1);
-            priority->setAttribute("maximum", 5);
-            priority->setValue(3);
-            browser->addProperty(priority);
+            filter = new WidgetEventFilter(customplot);
+            customplot->installEventFilter(filter);
+            connect(filter, &WidgetEventFilter::widgetChanged, this,
+                         [=, this](QObject *obj){
+                            auto metaobj = obj->metaObject();
+                            auto prop_count = metaobj->propertyCount();
+                            for(auto i = 0; i < prop_count; i++) {
+                                auto prop = metaobj->property(i);
+                                auto varprop_it = propMap.find(prop.name());
+                                if(varprop_it != propMap.end()) {
+                                    auto read_prop = prop.read(obj);
+                                    varprop_it.value()->setValue(read_prop);
+                                    qDebug() << read_prop;
+                                }
+                            }
+                         });
+
+
+            //customplot->setProperty(const char *name, const QVariant &value)
+
 
             auto metaobj = customplot->metaObject();
             auto prop_count = metaobj->propertyCount();
@@ -130,6 +144,7 @@ public:
                         qDebug() << "Added property: " << prop.name() << "/" << read_prop.typeId() << "read_prop" << read_prop;
                         auto item = browser->addProperty(added_props);
                         item->property()->setEnabled(prop.isWritable());
+                        propMap.insert(prop.name(),added_props);
                     } else {
                         qDebug() << "Unable to add property: " << prop.name() << "/" << read_prop.typeId() << "/" << read_prop;
                         j++;

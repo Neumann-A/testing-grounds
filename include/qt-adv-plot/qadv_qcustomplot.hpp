@@ -2,10 +2,6 @@
 
 #include <qcustomplot.h>
 
-
-
-
-
 class QWidget;
 class QContextMenuEvent;
 
@@ -16,6 +12,9 @@ public:
     QAdvCustomPlot(QWidget * parent = nullptr);
     ~QAdvCustomPlot() override;
     void contextMenuEvent(QContextMenuEvent *event) override;
-private:
+
+    Q_SIGNAL void propertyChanged();
+protected:
+    bool event(QEvent *event) override;
 
 };
