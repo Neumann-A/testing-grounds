@@ -69,8 +69,8 @@ QAdvCustomPlot::QAdvCustomPlot(QWidget *parent)
 
     xAxis2->setTickLabels(false);
     yAxis2->setTickLabels(false);
-    xAxis->setLabel("x Axis");
-    yAxis->setLabel("y Axis");
+    xAxis->setLabel("x Axis Label");
+    yAxis->setLabel("y Axis Label");
     setupDefaultAxisStyle(*xAxis);
     setupDefaultAxisStyle(*xAxis2);
     setupDefaultAxisStyle(*yAxis);
@@ -91,13 +91,12 @@ QAdvCustomPlot::~QAdvCustomPlot(){
 };
 
 bool QAdvCustomPlot::event(QEvent *event) {
-    Q_EMIT propertyChanged();
+    //Q_EMIT propertyChanged();
     return QWidget::event(event);
 };
 
 void QAdvCustomPlot::contextMenuEvent(QContextMenuEvent *event)
 {
-
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -149,7 +148,7 @@ void QAdvCustomPlot::contextMenuEvent(QContextMenuEvent *event)
         lineedit_lower->setFrame(false);
         QObject::connect(lineedit_lower, &QLineEdit::textChanged,
                          [&](const QString &text) { this->xAxis->setRangeLower(text.toDouble()); });
-        QObject::connect(lineedit_lower, &QLineEdit::editingFinished, [&]() { this->replot(); });
+        QObject::connect(lineedit_lower, &QLineEdit::editingFinished, this, [=, this]() { this->replot(); });
 
         auto lineedit_upper   = new QLineEdit(xaxis_menu);
         lineedit_upper->setMinimumWidth(30);
@@ -168,7 +167,7 @@ void QAdvCustomPlot::contextMenuEvent(QContextMenuEvent *event)
                          [&](const QString &text) { 
                                 this->xAxis->setRangeUpper(text.toDouble()); 
                              });
-        QObject::connect(lineedit_upper, &QLineEdit::editingFinished, [&]() { this->replot(); });
+        QObject::connect(lineedit_upper, &QLineEdit::editingFinished, this, [=,this]() { this->replot(); });
         
         QObject::connect(xAxis, qOverload<const QCPRange &>(&QCPAxis::rangeChanged), [&](const QCPRange &newRange) {qDebug() << "range changed";});
 

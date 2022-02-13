@@ -1,3 +1,4 @@
+#include <qmetaobject.h>
 #include <qnamespace.h>
 #include <qobject.h>
 #include <qopenglextrafunctions.h>
@@ -25,6 +26,8 @@
 #include <QtVariantEditorFactory>
 #include <QtVariantProperty>
 #include <QtVariantPropertyManager>
+
+
 
 struct QDockInit {
     QFlags<ads::CDockWidget::DockWidgetFeature> features {ads::CDockWidget::DefaultDockWidgetFeatures};
@@ -69,6 +72,7 @@ private:
     WidgetEventFilter *filter;
 
     QMap<QString, QtVariantProperty*> propMap;
+    std::vector<PropertyNotifyBinder*> prop_connectors;
 protected:
     //bool event(QEvent *e) override;
 public:
@@ -94,77 +98,82 @@ public:
             auto qcustomplotPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-plot"});
             qcustomplotPlotDock->setWidget(customplot);
         }
-        {
-            variantManager = new QtVariantPropertyManager(&mainWindow);
-            connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
-                        [=,this](QtProperty * prop, const QVariant & variant){
-                            customplot->setProperty(prop->propertyName().toUtf8().data(), variant);
-                        });
+        // {
+            // variantManager = new QtVariantPropertyManager(&mainWindow);
+            // connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
+            //             [=,this](QtProperty * prop, const QVariant & variant){
+            //                 customplot->setProperty(prop->propertyName().toUtf8().data(), variant);
+            //             });
 
-            variantEditor = new QtVariantEditorFactory(this);
-            browser = new QtTreePropertyBrowser(&mainWindow);
-            browser->setFactoryForManager(variantManager, variantEditor);
+            // variantEditor = new QtVariantEditorFactory(this);
+            // browser = new QtTreePropertyBrowser(&mainWindow);
+            // browser->setFactoryForManager(variantManager, variantEditor);
 
-            filter = new WidgetEventFilter(customplot);
-            customplot->installEventFilter(filter);
-            connect(filter, &WidgetEventFilter::widgetChanged, this,
-                         [=, this](QObject *obj){
-                            auto metaobj = obj->metaObject();
-                            auto prop_count = metaobj->propertyCount();
-                            for(auto i = 0; i < prop_count; i++) {
-                                auto prop = metaobj->property(i);
-                                auto varprop_it = propMap.find(prop.name());
-                                if(varprop_it != propMap.end()) {
-                                    auto read_prop = prop.read(obj);
-                                    varprop_it.value()->setValue(read_prop);
-                                    qDebug() << read_prop;
-                                }
-                            }
-                         });
+            // filter = new WidgetEventFilter(customplot);
+            // customplot->installEventFilter(filter);
+            // connect(filter, &WidgetEventFilter::widgetChanged, this,
+            //              [=, this](QObject *obj){
+            //                 auto metaobj = obj->metaObject();
+            //                 auto prop_count = metaobj->propertyCount();
+            //                 for(auto i = 0; i < prop_count; i++) {
+            //                     auto prop = metaobj->property(i);
+            //                     auto varprop_it = propMap.find(prop.name());
+            //                     if(varprop_it != propMap.end()) {
+            //                         auto read_prop = prop.read(obj);
+            //                         varprop_it.value()->setValue(read_prop);
+            //                         qDebug() << read_prop;
+            //                     }
+            //                 }
+            //              });
 
 
             //customplot->setProperty(const char *name, const QVariant &value)
 
 
-            auto metaobj = customplot->metaObject();
-            auto prop_count = metaobj->propertyCount();
-            QStringList properties;
-            auto j = 0;
-            for(auto i = 0; i < prop_count; i++) {
-                auto prop = metaobj->property(i);
-                auto read_prop = prop.read(customplot);
-                properties << QString::fromLatin1(prop.name());
-                if(read_prop.isValid() && !read_prop.isNull()) {
-                    if(read_prop.type() > 65000) {
-                        continue;
-                    }
-                    auto added_props = variantManager->addProperty(read_prop.type(),prop.name());
-                    if(added_props) {
-                        added_props->setValue(std::move(read_prop));
-                        qDebug() << "Added property: " << prop.name() << "/" << read_prop.typeId() << "read_prop" << read_prop;
-                        auto item = browser->addProperty(added_props);
-                        item->property()->setEnabled(prop.isWritable());
-                        propMap.insert(prop.name(),added_props);
-                    } else {
-                        qDebug() << "Unable to add property: " << prop.name() << "/" << read_prop.typeId() << "/" << read_prop;
-                        j++;
-                    }
-                }
-                else {
-                    qDebug() << "Is invalid or null:" << read_prop;
-                }
-            }
-            qDebug() << j << "/"<< prop_count;
-            qDebug() << properties;
-            // dynamicPropertyNames() 
+        //     auto metaobj = customplot->metaObject();
+        //     auto prop_count = metaobj->propertyCount();
+        //     QStringList properties;
+        //     auto j = 0;
+        //     for(auto i = 0; i < prop_count; i++) {
+        //         auto prop = metaobj->property(i);
+        //         auto read_prop = prop.read(customplot);
+        //         properties << QString::fromLatin1(prop.name());
+        //         if(read_prop.isValid() && !read_prop.isNull()) {
+        //             if(read_prop.type() > 65000) {
+        //                 continue;
+        //             }
+        //             QtVariantProperty
+        //             auto added_props = variantManager->addProperty(read_prop.type(),prop.name());
+        //             if(added_props) {
+        //                 added_props->setValue(std::move(read_prop));
+        //                 qDebug() << "Added property: " << prop.name() << "/" << read_prop.typeId() << "read_prop" << read_prop;
+        //                 auto item = browser->addProperty(added_props);
+        //                 item->property()->setEnabled(prop.isWritable());
+        //                 propMap.insert(prop.name(),added_props);
+        //                 // if(prop.hasNotifySignal()) {
+        //                 //     prop_connectors.push_back(new PropertyNotifyBinder(customplot,prop,added_props));
+        //                 // }
+        //             } else {
+        //                 qDebug() << "Unable to add property: " << prop.name() << "/" << read_prop.typeId() << "/" << read_prop;
+        //                 j++;
+        //             }
+        //         }
+        //         else {
+        //             qDebug() << "Is invalid or null:" << read_prop;
+        //         }
+
+        //     }
+        //     qDebug() << j << "/"<< prop_count;
+        //     qDebug() << properties;
+        //     // dynamicPropertyNames() 
            
-            auto qcustomplotPlotPropertyDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-properties"});
-            qcustomplotPlotPropertyDock->setWidget(browser);
-        }
-        //{
-        //    auto imguiPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="imgui-plot"});
-        //    imguiPlotDock->setWidget(new QAdvImguiPlot(&mainWindow));
-        //}
+        //     auto qcustomplotPlotPropertyDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-properties"});
+        //     qcustomplotPlotPropertyDock->setWidget(browser);
+        // }
+        // //{
+        // //    auto imguiPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="imgui-plot"});
+        // //    imguiPlotDock->setWidget(new QAdvImguiPlot(&mainWindow));
+        // //}
         mainWindow.show();
     }
     ~QtAdvPlot_App() noexcept override {

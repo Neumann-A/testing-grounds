@@ -17,4 +17,6 @@ public:
 protected:
     bool event(QEvent *event) override;
 
+
+
 };
