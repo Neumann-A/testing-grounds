@@ -1,6 +1,7 @@
 #include <qmetaobject.h>
 #include <qnamespace.h>
 #include <qobject.h>
+#include <qobjectdefs.h>
 #include <qopenglextrafunctions.h>
 #include <qopenglwidget.h>
 #include <qsize.h>
@@ -10,6 +11,7 @@
 #include <QWidget>
 #include <QMenuBar>
 #include <QMenu>
+#include <QProperty>
 
 #include <DockManager.h>
 #include <qtvariantproperty.h>
@@ -59,6 +61,27 @@ static  ads::CDockWidget * setUpNewDockWidget(QMainWindow& main, ads::CDockManag
     return pdock;
 }
 
+void recursiveProperties(QObject* from, const QMetaObject * meta_obj = nullptr) {
+    if(!meta_obj) { 
+        meta_obj =  from->metaObject();
+        auto dyn_prop = from->dynamicPropertyNames();
+        qDebug() << "Dyn. Properties: \n" << dyn_prop;
+    };
+    if(auto supermeta = meta_obj->superClass()) recursiveProperties(from, supermeta);
+
+    qDebug() << "Classname: " << meta_obj->className(); 
+    qDebug() << "Properties: ";
+    QStringList properties;
+
+    for(auto i = meta_obj->propertyOffset(); i < meta_obj->propertyCount(); i++) {
+        auto meta_property = meta_obj->property(i);
+        auto property = meta_property.read(from);
+        properties << QString::fromLatin1(meta_property.name()).append("[").append(property.typeName()).append("|").append(property.toString()).append("]");
+    }
+
+    qDebug() << properties;
+}
+
 class QtAdvPlot_App : public QApplication {
 private:
     QMainWindow mainWindow;
@@ -97,6 +120,31 @@ public:
             customplot = new QAdvCustomPlot(&mainWindow);
             auto qcustomplotPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-plot"});
             qcustomplotPlotDock->setWidget(customplot);
+
+            recursiveProperties(customplot);
+            recursiveProperties(customplot->xAxis);
+            recursiveProperties(customplot->plotLayout());
+            recursiveProperties(customplot->xAxis->grid());
+            recursiveProperties(customplot->yAxis->grid());
+            // auto to_read = customplot->xAxis->grid();
+            // auto metaobj = to_read->metaObject();
+            // qDebug() << metaobj->className();
+            // auto prop_count = metaobj->propertyCount();
+            // qDebug() << "Number of properties: " << prop_count << " offset:" << metaobj->propertyOffset();
+            // QStringList properties;
+            // for(auto i = metaobj->propertyOffset(); i < prop_count; i++) {
+            //     auto prop = metaobj->property(i);
+            //     auto read_prop = prop.read(to_read);
+            //     qDebug() << prop.name() << ":" << read_prop;
+            //     properties << QString::fromLatin1(prop.name());
+            // }
+            // qDebug() << "Properties: \n" << properties;
+            // QStringList dyn_properties;
+            // auto dyn_prop = to_read->dynamicPropertyNames();
+            // for(auto &i : dyn_prop) {
+            //     qDebug() << i;
+            // }
+            // qDebug() << "Dyn. Properties: \n" << dyn_properties;
         }
         // {
             // variantManager = new QtVariantPropertyManager(&mainWindow);
