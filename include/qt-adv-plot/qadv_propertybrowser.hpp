@@ -12,6 +12,7 @@ class QAdv_VariantEditorFactoryPrivate;
 
 class QAdv_VariantPropertyManager : public QtVariantPropertyManager {
 public:
+    QAdv_VariantPropertyManager(QObject *parent);
     bool isPropertyTypeSupported(int propertyType) const override;
 };
 
@@ -20,6 +21,7 @@ public:
     QAdv_VariantEditorFactory(QObject *parent);
     ~QAdv_VariantEditorFactory() noexcept override;
 protected:
+    QWidget *createEditor(QtVariantPropertyManager *manager, QtProperty *property, QWidget *parent) override;
     QWidget *createEditor(QtProperty *property, QWidget *parent) override;
 private:
     std::unique_ptr<QAdv_VariantEditorFactoryPrivate> p_ptr;
