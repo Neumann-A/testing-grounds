@@ -15,6 +15,7 @@
 #include <QProperty>
 
 #include <DockManager.h>
+#include <qtpropertybrowser.h>
 #include <qttreepropertybrowser.h>
 #include <qtvariantproperty.h>
 
@@ -63,19 +64,18 @@ static  ads::CDockWidget * setUpNewDockWidget(QMainWindow& main, ads::CDockManag
     return pdock;
 }
 
-QtAbstractPropertyBrowser * recursiveProperties(QtVariantPropertyManager * manager, QObject* from, QtAbstractPropertyBrowser * browser, QtProperty * parent_property = nullptr, const QMetaObject * meta_obj = nullptr) {
-    static std::vector<QPropertyNotifier> prop_handlers;
+QList<QtVariantPropertyManager *> recursiveProperties(QtVariantPropertyManager * manager, QObject* from, QtAbstractPropertyBrowser * browser, QtProperty * parent_property = nullptr, const QMetaObject * meta_obj = nullptr) {
 
-
+    QList<QtVariantPropertyManager *> managers;
 
     if(!meta_obj) { 
         meta_obj =  from->metaObject();
         auto dyn_prop = from->dynamicPropertyNames();
         qDebug() << "Dyn. Properties: \n" << dyn_prop;
     };
-    auto name = from->objectName();
-    if(name.isEmpty()) name = meta_obj->className();
-    else name.append(" (T=").append(meta_obj->className()).append(")");
+    auto name = meta_obj->className();
+    //if(name.isEmpty() || from->|| from->inherits(meta_obj->className())) name = meta_obj->className();
+    //else name.append(" (T=").append(meta_obj->className()).append(")");
 
     bool is_parent = false;
     QtProperty * top_property;
@@ -87,7 +87,7 @@ QtAbstractPropertyBrowser * recursiveProperties(QtVariantPropertyManager * manag
         top_property = manager->addProperty(QtVariantPropertyManager::groupTypeId(), name);
     }
 
-    if(auto supermeta = meta_obj->superClass()) recursiveProperties(manager, from, browser, parent_property, supermeta);
+    if(auto supermeta = meta_obj->superClass()) recursiveProperties(manager, from, browser, top_property, supermeta);
 
     qDebug() << "Classname: " << meta_obj->className(); 
     qDebug() << "Properties: ";
@@ -125,14 +125,6 @@ QtAbstractPropertyBrowser * recursiveProperties(QtVariantPropertyManager * manag
                 // id_property->setEnabled(false);
                 // manager_property->addSubProperty(id_property);
                 top_property->addSubProperty(manager_property);
-                if(meta_property.isBindable()) {
-                    info.append("|bound");
-                    auto bindable = meta_property.bindable(from);
-                    prop_handlers.push_back( bindable.addNotifier([=](){ 
-                        qDebug() << "Notifer called"; 
-                        auto property_update = meta_property.read(from); 
-                        manager_property->setValue(property_update);}));
-                }
             } else {
                 info.append("|!added");
             }
@@ -143,13 +135,20 @@ QtAbstractPropertyBrowser * recursiveProperties(QtVariantPropertyManager * manag
 
     if(is_parent)
     {
-        auto item = browser->addProperty(parent_property);
+        browser->addProperty(parent_property);
     } else {
         parent_property->addSubProperty(top_property);
     }
 
     qDebug() << properties;
-    return browser;
+    return managers;
+}
+
+void recursive_do_not_expand(QtTreePropertyBrowser * brow, const QList<QtBrowserItem *> &items) {
+    for(auto item : items) {
+        brow->setExpanded(item, false);
+        recursive_do_not_expand(brow, item->children());
+    }
 }
 
 class QtAdvPlot_App : public QApplication {
@@ -162,7 +161,8 @@ private:
     QtVariantPropertyManager  *variantManager;
     QtVariantEditorFactory *variantEditor;
     QtTreePropertyBrowser *browser;
-    WidgetEventFilter *filter;
+    //WidgetEventFilter *filter;
+    QList<QtVariantPropertyManager *> variant_managers;
 
     QMap<QString, QtVariantProperty*> propMap;
     std::vector<PropertyNotifyBinder*> prop_connectors;
@@ -196,50 +196,54 @@ public:
             browser = new QtTreePropertyBrowser(&mainWindow);
             variantManager = new QAdv_VariantPropertyManager(&mainWindow);//QtVariantPropertyManager QAdv_VariantPropertyManager(&mainWindow);
             browser->setFactoryForManager(variantManager, variantEditor);
-            recursiveProperties(variantManager, customplot, browser);
-            connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
-                [=,this](QtProperty * prop, const QVariant & variant){
-                    QtVariantProperty * property = static_cast<QtVariantProperty*>(prop);
-                    const auto obj_adress = property->propertyId().toULongLong();
-                    qDebug() << "Comparing" << obj_adress <<"==" <<(uintptr_t)customplot;
-                    if(obj_adress == (uintptr_t)customplot) {
-                        qDebug() << "Property Changed (plot): " << property->propertyName();
-                        customplot->setProperty(property->propertyName().toUtf8().data(), variant);
-                    }
-                });
+
+            // recursiveProperties(variantManager, customplot, browser);
+            // connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
+            //     [=,this](QtProperty * prop, const QVariant & variant){
+            //         QtVariantProperty * property = static_cast<QtVariantProperty*>(prop);
+            //         const auto obj_adress = property->propertyId().toULongLong();
+            //         qDebug() << "Comparing" << obj_adress <<"==" <<(uintptr_t)customplot;
+            //         if(obj_adress == (uintptr_t)customplot) {
+            //             qDebug() << "Property Changed (plot): " << property->propertyName();
+            //             customplot->setProperty(property->propertyName().toUtf8().data(), variant);
+            //         }
+            //     });
             recursiveProperties(variantManager, customplot->xAxis, browser);
             connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
                 [=,this](QtProperty * prop, const QVariant & variant){
                     QtVariantProperty * property = static_cast<QtVariantProperty*>(prop);
                     const auto obj_adress = property->propertyId().toULongLong();
-                    qDebug() << "Comparing" << obj_adress <<"==" <<(uintptr_t)customplot->xAxis;
+                    qDebug() << "Name:"<< property->propertyName() << "|Comparing" << obj_adress <<"==" <<(uintptr_t)customplot->xAxis;
                     if(obj_adress == (uintptr_t)customplot->xAxis) {
                         qDebug() << "Property Changed (xaxis): " << property->propertyName();
                         customplot->xAxis->setProperty(property->propertyName().toUtf8().data(), variant);
+                        customplot->replot();
                     }
                 });
-            recursiveProperties(variantManager, customplot->plotLayout(), browser);
-            connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
-                [=,this](QtProperty * prop, const QVariant & variant){
-                    QtVariantProperty * property = static_cast<QtVariantProperty*>(prop);
-                    const auto obj_adress = property->propertyId().toULongLong();
-                    qDebug() << "Comparing" << obj_adress <<"==" <<(uintptr_t)customplot->plotLayout();
-                    if(obj_adress == (uintptr_t)customplot->plotLayout()) {
-                        qDebug() << "Property Changed(plot layout): " << property->propertyName();
-                        customplot->plotLayout()->setProperty(property->propertyName().toUtf8().data(), variant);
-                    }
-                });
-            recursiveProperties(variantManager, customplot->xAxis->grid(), browser);
-            connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
-                [=,this](QtProperty * prop, const QVariant & variant){
-                    QtVariantProperty * property = static_cast<QtVariantProperty*>(prop);
-                    const auto obj_adress = property->propertyId().toULongLong();
-                    qDebug() << "Comparing" << obj_adress <<"==" <<(uintptr_t)customplot->xAxis->grid();
-                    if(obj_adress == (uintptr_t)customplot->xAxis->grid()) {
-                        qDebug() << "Property Changed(x-axis-grid): " << property->propertyName();
-                        customplot->xAxis->grid()->setProperty(property->propertyName().toUtf8().data(), variant);
-                    }
-                });
+            // recursiveProperties(variantManager, customplot->plotLayout(), browser);
+            // connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
+            //     [=,this](QtProperty * prop, const QVariant & variant){
+            //         QtVariantProperty * property = static_cast<QtVariantProperty*>(prop);
+            //         const auto obj_adress = property->propertyId().toULongLong();
+            //         qDebug() << "Comparing" << obj_adress <<"==" <<(uintptr_t)customplot->plotLayout();
+            //         if(obj_adress == (uintptr_t)customplot->plotLayout()) {
+            //             qDebug() << "Property Changed(plot layout): " << property->propertyName();
+            //             customplot->plotLayout()->setProperty(property->propertyName().toUtf8().data(), variant);
+            //         }
+            //     });
+            // recursiveProperties(variantManager, customplot->xAxis->grid(), browser);
+            // connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
+            //     [=,this](QtProperty * prop, const QVariant & variant){
+            //         QtVariantProperty * property = static_cast<QtVariantProperty*>(prop);
+            //         const auto obj_adress = property->propertyId().toULongLong();
+            //         qDebug() << "Comparing" << obj_adress <<"==" <<(uintptr_t)customplot->xAxis->grid();
+            //         if(obj_adress == (uintptr_t)customplot->xAxis->grid()) {
+            //             qDebug() << "Property Changed(x-axis-grid): " << property->propertyName();
+            //             customplot->xAxis->grid()->setProperty(property->propertyName().toUtf8().data(), variant);
+            //         }
+            //     });
+            browser->setIndentation(10);
+            recursive_do_not_expand(browser, browser->topLevelItems());
 
             auto qcustomplotPlotPropertyDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-properties"});
             qcustomplotPlotPropertyDock->setWidget(browser);
