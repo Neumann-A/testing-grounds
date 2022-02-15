@@ -4,13 +4,13 @@
 
 #include "qcustomplot.h"
 
-static QMap <QString,Qt::PenStyle> PenStyleMap {
-    {"NoPen", Qt::PenStyle::NoPen},
-    {"SolidLine", Qt::PenStyle::SolidLine},
-    {"DashLine", Qt::PenStyle::DashLine},
-    {"DotLine", Qt::PenStyle::DotLine},
-    {"DashDotLine", Qt::PenStyle::DashDotLine},
-    {"DashDotDotLine", Qt::PenStyle::DashDotDotLine},
+static QMap <Qt::PenStyle,QString> PenStyleMap {
+    {Qt::PenStyle::NoPen, "NoPen"},
+    {Qt::PenStyle::SolidLine, "SolidLine"},
+    {Qt::PenStyle::DashLine, "DashLine"},
+    {Qt::PenStyle::DotLine, "DotLine"},
+    {Qt::PenStyle::DashDotLine, "DashDotLine", },
+    {Qt::PenStyle::DashDotDotLine, "DashDotDotLine"},
 };
 
 QAdv_VariantPropertyManager::QAdv_VariantPropertyManager(QObject *parent) : QtVariantPropertyManager(parent) {
@@ -67,15 +67,7 @@ void QAdv_VariantPropertyManager::setValue(QtProperty *property, const QVariant 
         switch(val.typeId()) {
         case qMetaTypeId<QPen>(): {
             QPen p = val.value<QPen>();
-            Data d = propertyToData[property];
-            d.value = p;
-            if(d.x["width"]) { d.x["width"]->setValue(p.width()); }
-            if(d.x["color"]) { d.x["color"]->setValue(p.color()); }
-            if(d.x["style"]) { d.x["style"]->setValue(PenStyleMap.key(p.style())); }
-            propertyToData[property] = d;
-            //qDebug() << "setValue(QPen) called: " <<property->propertyName();
-            Q_EMIT propertyChanged(property);
-            Q_EMIT valueChanged(property, p);
+            setValue(property,p);
             return;
         }
         default:
@@ -83,6 +75,26 @@ void QAdv_VariantPropertyManager::setValue(QtProperty *property, const QVariant 
         }
     }
     QtVariantPropertyManager::setValue(property, val);
+}
+
+void QAdv_VariantPropertyManager::setValue(QtProperty *property, const QPen &val)
+{
+    const QPen& p = val;
+    Data d = propertyToData[property];
+    if(d.value == p) {
+        qDebug() << "val unchanged";
+        return;
+    }
+    d.value = p;
+    if(d.x["width"]) { d.x["width"]->setValue(p.width()); }
+    if(d.x["color"]) { d.x["color"]->setValue(p.color()); }
+    if(d.x["style"]) {
+         auto index = PenStyleMap.values().indexOf(PenStyleMap[p.style()]);
+         d.x["style"]->setValue(index); 
+    }
+    propertyToData[property] = d;
+    Q_EMIT propertyChanged(property);
+    Q_EMIT valueChanged(property, p);
 }
 
 void QAdv_VariantPropertyManager::slotValueChanged(QtProperty *property, const QVariant &value)
@@ -95,17 +107,19 @@ void QAdv_VariantPropertyManager::slotValueChanged(QtProperty *property, const Q
         switch(v.typeId()) {
             case qMetaTypeId<QPen>(): {
                 QPen p = v.value<QPen>();
-                if(string.compare("width")==0) { p.setWidth(value.value<int>()); }
+                if(string.compare("width")==0) { 
+                    qDebug() << "Selected Width:"<< value.value<int>();
+                    p.setWidth(value.value<int>()); }
                 if(string.compare("color")==0) { p.setColor(value.value<QColor>()); }
                 if(string.compare("style")==0) { 
                     qDebug() << "Selected Style:"<< value.value<int>() << "/"<< PenStyleMap.keys().at(value.value<int>());
-                    p.setStyle(PenStyleMap[PenStyleMap.keys().at(value.value<int>())]); 
+                    p.setStyle(PenStyleMap.keys().at(value.value<int>())); 
                 }
-                v = p;
+                setValue(prop, p);
+                //v = p;
             }
         }
-        setValue(prop, v);
-
+        //setValue(prop, v);
     }
 }
 
@@ -136,8 +150,8 @@ void QAdv_VariantPropertyManager::initializeProperty(QtProperty *property)
         dataToProperity[d.x["color"]] = std::make_tuple("color",property);
         d.x["style"] = that->addProperty(QtVariantPropertyManager::enumTypeId());
         d.x["style"]->setPropertyName(tr("style"));
-        qDebug() << "Keys:" <<PenStyleMap.keys();
-        d.x["style"]->setAttribute("enumNames", PenStyleMap.keys());
+        qDebug() << "Enums:" <<PenStyleMap.values();
+        d.x["style"]->setAttribute("enumNames", PenStyleMap.values());
         //d.x["style"]->setValue(1);
         property->addSubProperty(d.x["style"]);
         d.p["style"] = property;

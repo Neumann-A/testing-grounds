@@ -23,6 +23,7 @@ public:
 
     Q_SLOT void setValue(QtProperty *property, const QVariant &val) override;
 private:
+    Q_SLOT void setValue(QtProperty *property, const QPen &val);
     Q_SLOT void slotValueChanged(QtProperty *property, const QVariant &value);
     Q_SLOT void slotPropertyDestroyed(QtProperty *property);
 protected:
