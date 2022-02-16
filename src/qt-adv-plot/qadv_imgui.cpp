@@ -202,7 +202,7 @@ void QAdvImguiPlot::initializeGL()
     } else {
         ImGui::SetCurrentContext(im_ctx);
     }
-    auto qt_ctx = this->context();
+    //auto qt_ctx = this->context();
     qDebug() << "init:" << this->size();
     //qDebug() << qt_ctx->surface()->size();
     //qDebug() << qt_ctx->surface()->format();

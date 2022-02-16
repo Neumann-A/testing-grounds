@@ -64,7 +64,7 @@ static  ads::CDockWidget * setUpNewDockWidget(QMainWindow& main, ads::CDockManag
     return pdock;
 }
 
-QList<QtVariantPropertyManager *> recursiveProperties(QtVariantPropertyManager * manager, QObject* from, QtAbstractPropertyBrowser * browser, QtProperty * parent_property = nullptr, const QMetaObject * meta_obj = nullptr) {
+static QList<QtVariantPropertyManager *> recursiveProperties(QtVariantPropertyManager * manager, QObject* from, QtAbstractPropertyBrowser * browser, QtProperty * parent_property = nullptr, const QMetaObject * meta_obj = nullptr) {
 
     QList<QtVariantPropertyManager *> managers;
 
@@ -144,7 +144,7 @@ QList<QtVariantPropertyManager *> recursiveProperties(QtVariantPropertyManager *
     return managers;
 }
 
-void recursive_do_not_expand(QtTreePropertyBrowser * brow, const QList<QtBrowserItem *> &items) {
+static void recursive_do_not_expand(QtTreePropertyBrowser * brow, const QList<QtBrowserItem *> &items) {
     for(auto item : items) {
         brow->setExpanded(item, false);
         recursive_do_not_expand(brow, item->children());
