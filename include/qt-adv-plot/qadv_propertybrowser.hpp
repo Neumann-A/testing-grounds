@@ -24,9 +24,14 @@ public:
     Q_SLOT void setValue(QtProperty *property, const QVariant &val) override;
 private:
     Q_SLOT void setValue(QtProperty *property, const QPen &val);
+     Q_SLOT void setValue(QtProperty *property, const QBrush &val);
     Q_SLOT void slotValueChanged(QtProperty *property, const QVariant &value);
     Q_SLOT void slotPropertyDestroyed(QtProperty *property);
+    void updateQPen(QString &string, QtProperty *prop,const QVariant &value);
+    void updateQBrush(QString &string, QtProperty *prop,const QVariant &value);
 protected:
+    void initializeQPenProperty(QtProperty *property);
+    void initializeQBrushProperty(QtProperty *property);
     void initializeProperty(QtProperty *property) override;
     void uninitializeProperty(QtProperty *property) override;
     //int valueType(int propertyType) const override;
@@ -35,7 +40,6 @@ private:
     struct Data {
         QVariant value;
         QMap<QString, QtVariantProperty *> x;
-        QMap<QString, QtProperty *> p;
     };
     QMap<const QtProperty *, Data> propertyToData;
     QMap<const QtProperty *, std::tuple<QString, QtProperty *>> dataToProperity;
