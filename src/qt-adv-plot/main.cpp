@@ -82,7 +82,10 @@ static QMap<QtProperty * , QObject * > recursiveProperties(QtVariantPropertyMana
     bool is_parent = false;
     QtProperty * top_property;
     if(!parent_property) {
+        auto parent_name = from->objectName(); 
         parent_property = manager->addProperty(QtVariantPropertyManager::groupTypeId(), name);
+        static_cast<QtVariantProperty*>(parent_property)->setValue(parent_name);
+        parent_property->setWhatsThis(from->objectName());
         ret[parent_property] = from;
         is_parent = true;
         top_property = parent_property;
@@ -93,49 +96,44 @@ static QMap<QtProperty * , QObject * > recursiveProperties(QtVariantPropertyMana
     if(auto supermeta = meta_obj->superClass()) recursiveProperties(manager, from, browser, top_property, supermeta);
 
     qDebug() << "Classname: " << meta_obj->className(); 
-    qDebug() << "Properties: ";
-    QStringList properties;
+   // qDebug() << "Properties: ";
+   // QStringList properties;
     QStringList unsupported_properties;
     for(auto i = meta_obj->propertyOffset(); i < meta_obj->propertyCount(); i++) {
         auto meta_property = meta_obj->property(i);
-        QString info(QString::fromLatin1(meta_property.name()));
-        info.append("[").append(meta_property.typeName());
+     //   QString info(QString::fromLatin1(meta_property.name()));
+     //   info.append("[").append(meta_property.typeName());
         QVariant property;
         if(meta_property.isReadable()) {
             property = meta_property.read(from);
-            info.append("|").append(property.toString());
+           // info.append("|").append(property.toString());
             if(meta_property.isBindable())
             {
-                info.append("|bindable");
+               // info.append("|bindable");
             }
         } else {
-           info.append("|!read");
+          // info.append("|!read");
         }
         if(meta_property.isWritable()) {
-            info.append("|write");
+           // info.append("|write");
         }
-        info.append("]");
-        info.append("{ID:").append(QString::number(property.typeId()));
+       // info.append("]");
+       // info.append("{ID:").append(QString::number(property.typeId()));
         if(meta_property.isReadable()) {
             auto manager_property = manager->addProperty(property.typeId(),meta_property.name());
             if(manager_property)  {
                 manager_property->setEnabled(meta_property.isWritable());
                 manager_property->setValue(property);
-                manager_property->setPropertyId(QString::number((uintptr_t)from));
-                // auto id_property = manager->addProperty(QMetaType::Type::LongLong,"owneradress");
-                // id_property->setValue((uintptr_t)from);
-                // id_property->setEnabled(false);
-                // manager_property->addSubProperty(id_property);
                 top_property->addSubProperty(manager_property);
                 ret[manager_property] = from;
             } else {
-                info.append("|!added");
+              //  info.append("|!added");
                 auto not_added_info = QStringLiteral("Name: %0|Type: %1").arg(QString::fromLatin1(meta_property.name()), QString::fromLatin1(meta_property.typeName()));
                 unsupported_properties << not_added_info;
             }
         }
-        info.append("}");
-        properties << info;
+      //  info.append("}");
+      //  properties << info;
     }
 
     if(is_parent)
@@ -145,7 +143,7 @@ static QMap<QtProperty * , QObject * > recursiveProperties(QtVariantPropertyMana
         parent_property->addSubProperty(top_property);
     }
 
-    qDebug() << properties;
+    //qDebug() << properties;
     qDebug() << "Unsupported: " << unsupported_properties;
 
     return ret;
@@ -196,6 +194,10 @@ public:
         {
             customplot = new QAdvCustomPlot(&mainWindow);
             customplot->setObjectName("CustomPlot");
+
+            connect(customplot->xAxis, SIGNAL(rangeChanged(QCPRange)), customplot->xAxis2, SLOT(setRange(QCPRange)));
+            connect(customplot->yAxis, SIGNAL(rangeChanged(QCPRange)), customplot->yAxis2, SLOT(setRange(QCPRange)));
+
             auto qcustomplotPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-plot"});
             qcustomplotPlotDock->setWidget(customplot);
 
@@ -204,17 +206,70 @@ public:
             variantManager = new QAdv_VariantPropertyManager(&mainWindow);//QtVariantPropertyManager QAdv_VariantPropertyManager(&mainWindow);
             browser->setFactoryForManager(variantManager, variantEditor);
 
-            // recursiveProperties(variantManager, customplot, browser);
-            // recursiveProperties(variantManager, customplot->xAxis, browser);
-            // recursiveProperties(variantManager, customplot->plotLayout(), browser);
-            auto display_item = customplot->xAxis->grid();
-            QMap<QtProperty*, QObject *> map;
-            map = recursiveProperties(variantManager, display_item, browser);
+
+
+            QMap<QtProperty*, QObject *> propToObj;
+
+            {
+                auto display_item = customplot;
+                propToObj = recursiveProperties(variantManager, display_item, browser);
+            }
+            {
+                auto display_item = customplot->xAxis;
+                display_item->setObjectName("xAxisBottom");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->xAxis2;
+                display_item->setObjectName("xAxisTop");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->yAxis;
+                display_item->setObjectName("yAxisLeft");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->yAxis2;
+                display_item->setObjectName("yAxisRight");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->legend;
+                display_item->setObjectName("legend");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->xAxis->grid();
+                display_item->setObjectName("xGridBottom");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->yAxis->grid();
+                display_item->setObjectName("yGridLeft");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->xAxis2->grid();
+                display_item->setObjectName("xGridTop");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->yAxis2->grid();
+                display_item->setObjectName("yGridRight");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+            {
+                auto display_item = customplot->plotLayout();
+                display_item->setObjectName("plotLayout");
+                propToObj.insert(recursiveProperties(variantManager, display_item, browser));
+            }
+
             connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
                 [=,this](QtProperty * prop, const QVariant & variant){
-                    if(map.contains(prop))
+                    if(propToObj.contains(prop))
                     {
-                        auto owner = map[prop];
+                        auto owner = propToObj[prop];
                         QtVariantProperty * property = static_cast<QtVariantProperty*>(prop);
                         owner->setProperty(property->propertyName().toUtf8().data(), variant);
                         customplot->replot();
@@ -225,103 +280,7 @@ public:
 
             auto qcustomplotPlotPropertyDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-properties"});
             qcustomplotPlotPropertyDock->setWidget(browser);
-            //recursiveProperties(variantManager, customplot->yAxis->grid());
-            // auto to_read = customplot->xAxis->grid();
-            // auto metaobj = to_read->metaObject();
-            // qDebug() << metaobj->className();
-            // auto prop_count = metaobj->propertyCount();
-            // qDebug() << "Number of properties: " << prop_count << " offset:" << metaobj->propertyOffset();
-            // QStringList properties;
-            // for(auto i = metaobj->propertyOffset(); i < prop_count; i++) {
-            //     auto prop = metaobj->property(i);
-            //     auto read_prop = prop.read(to_read);
-            //     qDebug() << prop.name() << ":" << read_prop;
-            //     properties << QString::fromLatin1(prop.name());
-            // }
-            // qDebug() << "Properties: \n" << properties;
-            // QStringList dyn_properties;
-            // auto dyn_prop = to_read->dynamicPropertyNames();
-            // for(auto &i : dyn_prop) {
-            //     qDebug() << i;
-            // }
-            // qDebug() << "Dyn. Properties: \n" << dyn_properties;
         }
-        // {
-            // variantManager = new QtVariantPropertyManager(&mainWindow);
-            // connect(variantManager, &QtVariantPropertyManager::valueChanged, this,
-            //             [=,this](QtProperty * prop, const QVariant & variant){
-            //                 customplot->setProperty(prop->propertyName().toUtf8().data(), variant);
-            //             });
-
-            // variantEditor = new QtVariantEditorFactory(this);
-            // browser = new QtTreePropertyBrowser(&mainWindow);
-            // browser->setFactoryForManager(variantManager, variantEditor);
-
-            // filter = new WidgetEventFilter(customplot);
-            // customplot->installEventFilter(filter);
-            // connect(filter, &WidgetEventFilter::widgetChanged, this,
-            //              [=, this](QObject *obj){
-            //                 auto metaobj = obj->metaObject();
-            //                 auto prop_count = metaobj->propertyCount();
-            //                 for(auto i = 0; i < prop_count; i++) {
-            //                     auto prop = metaobj->property(i);
-            //                     auto varprop_it = propMap.find(prop.name());
-            //                     if(varprop_it != propMap.end()) {
-            //                         auto read_prop = prop.read(obj);
-            //                         varprop_it.value()->setValue(read_prop);
-            //                         qDebug() << read_prop;
-            //                     }
-            //                 }
-            //              });
-
-
-            //customplot->setProperty(const char *name, const QVariant &value)
-
-
-        //     auto metaobj = customplot->metaObject();
-        //     auto prop_count = metaobj->propertyCount();
-        //     QStringList properties;
-        //     auto j = 0;
-        //     for(auto i = 0; i < prop_count; i++) {
-        //         auto prop = metaobj->property(i);
-        //         auto read_prop = prop.read(customplot);
-        //         properties << QString::fromLatin1(prop.name());
-        //         if(read_prop.isValid() && !read_prop.isNull()) {
-        //             if(read_prop.type() > 65000) {
-        //                 continue;
-        //             }
-        //             QtVariantProperty
-        //             auto added_props = variantManager->addProperty(read_prop.type(),prop.name());
-        //             if(added_props) {
-        //                 added_props->setValue(std::move(read_prop));
-        //                 qDebug() << "Added property: " << prop.name() << "/" << read_prop.typeId() << "read_prop" << read_prop;
-        //                 auto item = browser->addProperty(added_props);
-        //                 item->property()->setEnabled(prop.isWritable());
-        //                 propMap.insert(prop.name(),added_props);
-        //                 // if(prop.hasNotifySignal()) {
-        //                 //     prop_connectors.push_back(new PropertyNotifyBinder(customplot,prop,added_props));
-        //                 // }
-        //             } else {
-        //                 qDebug() << "Unable to add property: " << prop.name() << "/" << read_prop.typeId() << "/" << read_prop;
-        //                 j++;
-        //             }
-        //         }
-        //         else {
-        //             qDebug() << "Is invalid or null:" << read_prop;
-        //         }
-
-        //     }
-        //     qDebug() << j << "/"<< prop_count;
-        //     qDebug() << properties;
-        //     // dynamicPropertyNames() 
-           
-        //     auto qcustomplotPlotPropertyDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="qcustomplot-properties"});
-        //     qcustomplotPlotPropertyDock->setWidget(browser);
-        // }
-        // //{
-        // //    auto imguiPlotDock = setUpNewDockWidget(mainWindow, *m_DockManager, *viewsmenu,{.title="imgui-plot"});
-        // //    imguiPlotDock->setWidget(new QAdvImguiPlot(&mainWindow));
-        // //}
         mainWindow.show();
     }
     ~QtAdvPlot_App() noexcept override {

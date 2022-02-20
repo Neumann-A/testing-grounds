@@ -18,4 +18,13 @@ qt_import_qml_plugins(tg-testing-qml)
 #get_target_property(src tg-testing-qml SOURCES)
 #get_target_property(link tg-testing-qml LINK_LIBRARIES)
 #cmake_print_variables(src link)
+
+#cmake_minimum_required(VERSION 3.21)
+#project(test_meta)
+find_package(Qt6 COMPONENTS Widgets Gui)
+add_library(qt_test_lib STATIC test_lib.cpp test_lib.hpp)
+target_link_libraries(qt_test_lib PUBLIC Qt6::Gui Qt6::Widgets)
+add_executable(qt_test test.cpp)
+target_link_libraries(qt_test PRIVATE qt_test_lib)
+
 feature_summary(WHAT ALL)

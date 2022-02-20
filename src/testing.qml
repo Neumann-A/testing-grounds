@@ -57,8 +57,8 @@ ApplicationWindow {
             title: qsTr("Options")
             Switch {
                 id: darkMode
-                anchors.right: parent.anchors.right
-                anchors.top: parent.anchors.top
+                anchors.right: Menu.anchors.right
+                anchors.top: Menu.anchors.top
                 anchors.margins: 10
                 text: "Dark theme"
                 checked: false
@@ -73,7 +73,7 @@ ApplicationWindow {
     //a button in the middle of the content area
     Button {
         text: qsTr("Hello World!")
-        anchors.horizontalCenter: parent.contentItem.horizontalCenter
-        anchors.verticalCenter: parent.contentItem.verticalCenter
+        anchors.horizontalCenter:  ApplicationWindow.contentItem.horizontalCenter
+        anchors.verticalCenter:  ApplicationWindow.contentItem.verticalCenter
     }
 }

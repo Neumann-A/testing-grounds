@@ -78,7 +78,7 @@ QVariant QAdv_VariantPropertyManager::value(const QtProperty *property) const {
     return QtVariantPropertyManager::value(property);
 }
 int QAdv_VariantPropertyManager::valueType(int propertyType) const {
-
+    if(propertyType == QtVariantPropertyManager::groupTypeId()) return qMetaTypeId<QString>();
     switch(propertyType) {
     case qMetaTypeId<QPen>(): return qMetaTypeId<QPen>();
     case qMetaTypeId<QBrush>(): return qMetaTypeId<QBrush>();
