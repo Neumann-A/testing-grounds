@@ -1,0 +1,27 @@
+{
+    "name" : "testing-hpx" ,
+    "target_type" : "executable",
+    "sources" : [
+        "src/testing-hpx.cpp",
+        "include/testing-hpx.hpp",
+        "src/testing-hpx-qt.cpp",
+        "include/testing-hpx-qt.hpp"
+    ],
+    "include_directories" : {
+        "private" : [ 
+            "include" ]
+    },
+    "link_libraries" : {
+        "private": [
+            "fmt::fmt",
+            "HPX::hpx",
+            "HPX::iostreams_component",
+            "HPX::component",
+            "Qt::Widgets",
+            "Qt::Gui"
+        ]
+    },
+    "compile_features" : {
+        "private" : ["cxx_std_20"]
+    }
+}

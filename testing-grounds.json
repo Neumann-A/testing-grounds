@@ -20,12 +20,14 @@
         {
             "name" : "QtSolutions",
             "components" : ["PropertyBrowser"]
-        }
+        },
+        "hpx"
     ],
     "list" : [
         "testing-grounds.target.json",
         "testing-qml.target.json",
         "testing-qt.target.json",
+        "testing-hpx.target.json",
         "qt-adv-plot.target.json"
     ]
 }
