@@ -21,6 +21,7 @@
             "name" : "QtSolutions",
             "components" : ["PropertyBrowser"]
         },
+        "asio",
         "hpx"
     ],
     "list" : [
@@ -28,6 +29,7 @@
         "testing-qml.target.json",
         "testing-qt.target.json",
         "testing-hpx.target.json",
+        "testing-asio.target.json",
         "qt-adv-plot.target.json"
     ]
 }
